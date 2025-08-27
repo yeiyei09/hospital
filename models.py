@@ -4,7 +4,7 @@ from database import Base
 
 class Paciente(Base):
     __tablename__ = 'pacientes'
-    idPaciente = Column(Integer, primary_key=True, index=True)
+    idPaciente = Column(String, primary_key=True, index=True)
     nombrePaciente = Column(String, index=True)
     correoPaciente = Column(String, index=True)
 
@@ -25,7 +25,7 @@ class Enfermera(Base):
 class AgendarCita(Base):
     __tablename__ = 'agendar_cita'
     idCita = Column(Integer, primary_key=True, index=True)
-    idPaciente = Column(Integer, ForeignKey('pacientes.idPaciente'))
+    idPaciente = Column(String, ForeignKey('pacientes.idPaciente'))
     idMedico = Column(Integer, ForeignKey('medicos.idMedico'))
     fechaAgendamiento = Column(Date, index=True)
     fechaEmision = Column(DateTime, default=datetime.now)  # Aquí se replica GETDATE()
@@ -36,7 +36,7 @@ class Diagnostico(Base):
     idDiagnostico = Column(Integer, primary_key=True, index=True)
     idCita = Column(Integer, ForeignKey('agendar_cita.idCita'))
     idMedico = Column(Integer, ForeignKey('medicos.idMedico'))
-    idPaciente = Column(Integer, ForeignKey('pacientes.idPaciente'))
+    idPaciente = Column(String, ForeignKey('pacientes.idPaciente'))
     idEnfermera = Column(Integer, ForeignKey('enfermeras.idEnfermera'))
     fechaEmision = Column(Date, index=True)  # Aquí se replica GETDATE()
     fechaDiagnostico = Column(DateTime, default=datetime.now)  # Aquí se replica GETDATE()
@@ -45,7 +45,7 @@ class Diagnostico(Base):
 class Factura(Base):
     __tablename__ = 'factura'
     idFactura = Column(Integer, primary_key=True, index=True)
-    idPaciente = Column(Integer, ForeignKey('pacientes.idPaciente'))
+    idPaciente = Column(String, ForeignKey('pacientes.idPaciente'))
     idCita = Column(Integer, ForeignKey('agendar_cita.idCita'))
     fechaEmision = Column(DateTime, default=datetime.now)  # Aquí se replica GETDATE()
     montoTotal = Column(Integer, index=True)
