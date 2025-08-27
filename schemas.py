@@ -2,6 +2,7 @@ from datetime import datetime, date
 from pydantic import BaseModel
 
 class PacienteBase(BaseModel):
+    idPaciente: str
     nombrePaciente: str
     correoPaciente: str
 
@@ -9,7 +10,7 @@ class PacienteCreate(PacienteBase):
     pass
 
 class Paciente(PacienteBase):
-    id: int
+    id: str
 
     class Config:
         from_attributes = True
@@ -43,7 +44,7 @@ class Enfermera(EnfermeraBase):
         from_attributes = True
 
 class AgendarCitaBase(BaseModel):
-    idPaciente: int
+    idPaciente: str
     idMedico: int
     fechaAgendamiento: date  # Usar str para fechas en Pydantic
     motivoConsulta: str
@@ -61,7 +62,7 @@ class AgendarCita(AgendarCitaBase):
 class DiagnosticoBase(BaseModel):
     idCita: int
     idMedico: int
-    idPaciente: int
+    idPaciente: str
     idEnfermera: int
     fechaEmision: date  # Usar str para fechas en Pydantic
     descripcionDiagnostico: str
@@ -77,7 +78,7 @@ class Diagnostico(DiagnosticoBase):
         from_attributes = True
 
 class FacturaBase(BaseModel):
-    idPaciente: int
+    idPaciente: str
     idCita: int
     estadoFactura: str
     fechaVencimiento: date  # Usar str para fechas en Pydantic
