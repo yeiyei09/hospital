@@ -35,3 +35,4 @@ def delete_paciente(db: Session, paciente_id: str):
         db.commit()
     return db_paciente
 
+#

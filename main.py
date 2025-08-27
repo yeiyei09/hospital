@@ -58,3 +58,5 @@ def delete_paciente(paciente_id: str, db: Session = Depends(get_db)):
     if db_paciente is None:
         raise HTTPException(status_code=404, detail="Paciente no encontrado")
     return db_paciente, {"detail": "Paciente eliminado correctamente"}
+
+#
