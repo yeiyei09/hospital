@@ -52,9 +52,9 @@ def create_paciente(paciente: schemas.PacienteCreate, db: Session = Depends(get_
         return JSONResponse(status_code=201, content={
         "detail": "Paciente creado correctamente",
         "data": {
-        "idPaciente": paciente_creado.idPaciente,
-        "nombrePaciente": paciente_creado.nombrePaciente,
-        "correoPaciente": paciente_creado.correoPaciente
+        "Cedula paciente": paciente_creado.idPaciente,
+        "nombre de paciente": paciente_creado.nombrePaciente,
+        "correo de paciente": paciente_creado.correoPaciente
                 }
                                                      }
                             )
@@ -75,9 +75,9 @@ def read_one_paciente(paciente_id: str, db: Session = Depends(get_db)):
         return JSONResponse(status_code=200, content={
             "detail": "Paciente encontrado",
             "data": {
-                "idPaciente": db_paciente.idPaciente,
-                "nombrePaciente": db_paciente.nombrePaciente,
-                "correoPaciente": db_paciente.correoPaciente
+                "cedula paciente": db_paciente.idPaciente,
+                "nombre de paciente": db_paciente.nombrePaciente,
+                "correo de paciente": db_paciente.correoPaciente
             }
         })
 
@@ -90,9 +90,9 @@ def delete_paciente(paciente_id: str, db: Session = Depends(get_db)):
         return JSONResponse(status_code=200, content={
             "detail": "Paciente eliminado correctamente",
             "data": {
-                "idPaciente": db_paciente.idPaciente,
-                "nombrePaciente": db_paciente.nombrePaciente,
-                "correoPaciente": db_paciente.correoPaciente
+                "Cedula paciente": db_paciente.idPaciente,
+                "Nombre de paciente": db_paciente.nombrePaciente,
+                "correo de paciente": db_paciente.correoPaciente
             }
         })
 
@@ -105,9 +105,9 @@ def update_paciente(paciente_id: str, paciente: schemas.PacienteCreate, db: Sess
         return JSONResponse(status_code=200, content={
             "detail": "Paciente actualizado correctamente",
             "data": {
-                "idPaciente": db_paciente.idPaciente,
-                "nombrePaciente": db_paciente.nombrePaciente,
-                "correoPaciente": db_paciente.correoPaciente
+                "Cedula paciente": db_paciente.idPaciente,
+                "Nombre de paciente": db_paciente.nombrePaciente,
+                "correo de paciente": db_paciente.correoPaciente
             }
         })
 
@@ -130,29 +130,54 @@ def create_medico(medico: schemas.MedicoCreate, db: Session = Depends(get_db)):
         })
 
 @app.get("/medicos/", response_model=list[schemas.Medico], tags=["Médicos"])
-def read_medicos(db: Session = Depends(get_db)):
-    return crud.get_medicos(db), {"detail": "Médicos obtenidos correctamente"}
+def read_all_medicos(db: Session = Depends(get_db)):
+    dbGetMedicos = crud.get_medicos(db)
+    return dbGetMedicos
 
 @app.get("/medicos/{medico_id}", response_model=schemas.Medico, tags=["Médicos"])
-def read_medico(medico_id: int, db: Session = Depends(get_db)):
+def read_one_medico(medico_id: int, db: Session = Depends(get_db)):
     db_medico = crud.get_medico(db, medico_id=medico_id)
     if db_medico is None:
         raise HTTPException(status_code=404, detail="Médico no encontrado")
-    return db_medico, {"detail": "Médico encontrado"}
+    else:
+        return JSONResponse(status_code=200, content={
+            "detail": "Médico encontrado",
+            "data": {
+                "cedula medico": db_medico.idMedico,
+                "especializacion": db_medico.especializacion,
+                "nombre del medico": db_medico.nombreMedico,
+                "correo del medico": db_medico.correoMedico
+            }
+        })
 
 @app.delete("/medicos/{medico_id}", response_model=schemas.Medico, tags=["Médicos"])
 def delete_medico(medico_id: int, db: Session = Depends(get_db)):
     db_medico = crud.delete_medico(db, medico_id=medico_id)
     if db_medico is None:
         raise HTTPException(status_code=404, detail="Médico no encontrado")
-    return db_medico, {"detail": "Médico eliminado correctamente"}
+    else:
+        return JSONResponse(status_code=200, content={
+            "detail": "Médico eliminado correctamente",
+            "data": {
+                "Cedula del Medico": db_medico.idMedico,
+                "Nombre del Medico": db_medico.nombreMedico,
+                "Correo del Medico": db_medico.correoMedico
+            }
+        })
 
 @app.put("/medicos/{medico_id}", response_model=schemas.Medico, tags=["Médicos"])
 def update_medico(medico_id: int, medico: schemas.MedicoCreate, db: Session = Depends(get_db)):
     db_medico = crud.update_medico(db, medico_id=medico_id, medico=medico)
     if db_medico is None:
         raise HTTPException(status_code=404, detail="Médico no encontrado")
-    return db_medico, {"detail": "Médico actualizado correctamente"}
+    else: 
+        return JSONResponse(status_code=201, content={
+            "detail": "Médico actualizado correctamente", 
+            "data":{
+                "Cedula del Medico": db_medico.idMedico,
+                "Nombre del Medico": db_medico.nombreMedico,
+                "Correo del Medico": db_medico.correoMedico
+            }})
 
 #creacion de rutas para las enfermeras
 
@@ -174,22 +199,41 @@ def create_enfermera(enfermera: schemas.EnfermeraCreate, db: Session = Depends(g
         })
     
 @app.get("/enfermeras/", response_model=list[schemas.Enfermera], tags=["Enfermeras"])
-def read_enfermeras(db: Session = Depends(get_db)):
-    return crud.get_enfermeras(db), {"detail": "Enfermeras obtenidas correctamente"}
+def read_all_enfermeras(db: Session = Depends(get_db)):
+    dbGetEnfermeras = crud.get_enfermeras(db)
+    return dbGetEnfermeras
 
 @app.get("/enfermeras/{enfermera_id}", response_model=schemas.Enfermera, tags=["Enfermeras"])
-def read_enfermera(enfermera_id: int, db: Session = Depends(get_db)):
+def read_one_enfermera(enfermera_id: int, db: Session = Depends(get_db)):
     db_enfermera = crud.get_enfermera(db, enfermera_id=enfermera_id)
     if db_enfermera is None:
         raise HTTPException(status_code=404, detail="Enfermera no encontrada")
-    return db_enfermera, {"detail": "Enfermera encontrada"}
+    else:
+        return JSONResponse(status_code=200, content={
+            "detail": "Enfermera encontrada",
+            "data": {
+                "cedula enfermera": db_enfermera.idEnfermera,
+                "nombre de enfermera": db_enfermera.nombreEnfermera,
+                "area de enfermera": db_enfermera.area,
+                "correo de enfermera": db_enfermera.correoEnfermera
+            }
+        })
 
 @app.delete("/enfermeras/{enfermera_id}", response_model=schemas.Enfermera, tags=["Enfermeras"])
 def delete_enfermera(enfermera_id: int, db: Session = Depends(get_db)):
     db_enfermera = crud.delete_enfermera(db, enfermera_id=enfermera_id)
     if db_enfermera is None:
         raise HTTPException(status_code=404, detail="Enfermera no encontrada")
-    return db_enfermera, {"detail": "Enfermera eliminada correctamente"}
+    else:
+        return JSONResponse(status_code=200, content={
+            "detail": "Enfermera eliminada correctamente",
+            "data": {
+                "Cedula de la Enfermera": db_enfermera.idEnfermera,
+                "Nombre de la Enfermera": db_enfermera.nombreEnfermera,
+                "Correo de la Enfermera": db_enfermera.correoEnfermera,
+                "Area de la Enfermera": db_enfermera.area
+            }
+        })
 
 @app.put("/enfermeras/{enfermera_id}", response_model=schemas.Enfermera, tags=["Enfermeras"])
 def update_enfermera(enfermera_id: int, enfermera: schemas.EnfermeraCreate, db: Session = Depends(get_db)):
@@ -197,6 +241,12 @@ def update_enfermera(enfermera_id: int, enfermera: schemas.EnfermeraCreate, db: 
     if db_enfermera is None:
         raise HTTPException(status_code=404, detail="Enfermera no encontrada")
     else: 
-        return JSONResponse(status_code=200, content={"detail": "Enfermera actualizada correctamente", "data": db_enfermera}) 
+        return JSONResponse(status_code=201, content={
+            "detail": "Enfermera actualizada correctamente", 
+            "data": {
+                "Cedula de la Enfermera": db_enfermera.idEnfermera,
+                "Nombre de la Enfermera": db_enfermera.nombreEnfermera,
+                "Correo de la Enfermera": db_enfermera.correoEnfermera,
+                "Area de la Enfermera": db_enfermera.area
+            }}) 
 
-#creacion de rutas para las citas
