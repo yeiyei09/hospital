@@ -4,7 +4,7 @@ from schemas import PacienteCreate, MedicoCreate, EnfermeraCreate, AgendarCitaCr
 
 def create_paciente(db: Session, paciente: PacienteCreate):
     new_paciente = Paciente(
-        idPaciente=paciente.idPaciente,
+        idPaciente=str(paciente.idPaciente),
         nombrePaciente=paciente.nombrePaciente,
         correoPaciente=paciente.correoPaciente
     )
@@ -39,6 +39,7 @@ def delete_paciente(db: Session, paciente_id: str):
 
 def create_medico(db: Session, medico: MedicoCreate):
     new_medico = Medico(
+        idMedico = str(medico.idMedico),
         especializacion=medico.especializacion,
         nombreMedico=medico.nombreMedico,
         correoMedico=medico.correoMedico
@@ -48,13 +49,13 @@ def create_medico(db: Session, medico: MedicoCreate):
     db.refresh(new_medico)
     return new_medico
 
-def get_medico(db: Session, medico_id: int):
+def get_medico(db: Session, medico_id: str):
     return db.query(Medico).filter(Medico.idMedico == medico_id).first()
 
 def get_medicos(db: Session):
     return db.query(Medico).all()
 
-def update_medico(db: Session, medico_id: int, medico: MedicoCreate):
+def update_medico(db: Session, medico_id: str, medico: MedicoCreate):
     db_medico = db.query(Medico).filter(Medico.idMedico == medico_id).first()
     if db_medico:
         db_medico.especializacion = medico.especializacion
@@ -64,9 +65,46 @@ def update_medico(db: Session, medico_id: int, medico: MedicoCreate):
         db.refresh(db_medico)
     return db_medico
 
-def delete_medico(db: Session, medico_id: int):
+def delete_medico(db: Session, medico_id: str):
     db_medico = db.query(Medico).filter(Medico.idMedico == medico_id).first()
     if db_medico:
         db.delete(db_medico)
         db.commit()
     return db_medico
+
+#A partir de aqui hacemos metodos para las enfermeras
+
+def create_enfermera(db: Session, enfermera: EnfermeraCreate):
+    new_enfermera = Enfermera(
+        idEnfermera = str(enfermera.idEnfermera),
+        nombreEnfermera=enfermera.nombreEnfermera,
+        area = enfermera.area,
+        correoEnfermera=enfermera.correoEnfermera
+    )
+    db.add(new_enfermera)
+    db.commit()
+    db.refresh(new_enfermera)
+    return new_enfermera
+
+def get_enfermera(db: Session, enfermera_id: str):
+    return db.query(Enfermera).filter(Enfermera.idEnfermera == enfermera_id).first()
+
+def get_enfermeras(db: Session):
+    return db.query(Enfermera).all()
+
+def update_enfermera(db: Session, enfermera_id: str, enfermera: EnfermeraCreate):
+    db_enfermera = db.query(Enfermera).filter(Enfermera.idEnfermera == enfermera_id).first()
+    if db_enfermera:
+        db_enfermera.nombreEnfermera = enfermera.nombreEnfermera
+        db_enfermera.area = enfermera.area
+        db_enfermera.correoEnfermera = enfermera.correoEnfermera
+        db.commit()
+        db.refresh(db_enfermera)
+    return db_enfermera
+
+def delete_enfermera(db: Session, enfermera_id: str):
+    db_enfermera = db.query(Enfermera).filter(Enfermera.idEnfermera == enfermera_id).first()
+    if db_enfermera:
+        db.delete(db_enfermera)
+        db.commit()
+    return db_enfermera
