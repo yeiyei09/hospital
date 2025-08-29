@@ -38,7 +38,6 @@ class Diagnostico(Base):
     idMedico = Column(String, ForeignKey('medicos.idMedico'))
     idPaciente = Column(String, ForeignKey('pacientes.idPaciente'))
     idEnfermera = Column(String, ForeignKey('enfermeras.idEnfermera'))
-    fechaEmision = Column(Date, index=True)  # Aquí se replica GETDATE()
     fechaDiagnostico = Column(DateTime, default=datetime.now)  # Aquí se replica GETDATE()
     descripcionDiagnostico = Column(String, index=True)
 
@@ -47,6 +46,8 @@ class Factura(Base):
     idFactura = Column(Integer, primary_key=True, index=True)
     idPaciente = Column(String, ForeignKey('pacientes.idPaciente'))
     idCita = Column(Integer, ForeignKey('agendar_cita.idCita'))
+    estadoFactura = Column(String, index=True)
     fechaEmision = Column(DateTime, default=datetime.now)  # Aquí se replica GETDATE()
+    fechaVencimiento = Column(Date, index=True)
     montoTotal = Column(Integer, index=True)
     

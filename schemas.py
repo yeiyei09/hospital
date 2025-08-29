@@ -52,7 +52,7 @@ class AgendarCitaCreate(AgendarCitaBase):
     pass
 
 class AgendarCita(AgendarCitaBase):
-    id: int
+    idCita: int
     fechaEmision: datetime  # Usar str para fechas en Pydantic
 
     class Config:
@@ -63,14 +63,13 @@ class DiagnosticoBase(BaseModel):
     idMedico: str
     idPaciente: str
     idEnfermera: str
-    fechaEmision: date  # Usar str para fechas en Pydantic
     descripcionDiagnostico: str
 
 class DiagnosticoCreate(DiagnosticoBase):
     pass
 
 class Diagnostico(DiagnosticoBase):
-    id: int
+    idDiagnostico: int
     fechaDiagnostico: datetime  # Usar str para fechas en Pydantic
 
     class Config:
@@ -87,7 +86,7 @@ class FacturaCreate(FacturaBase):
     pass
 
 class Factura(FacturaBase):
-    id: int
+    idFactura: int
     fechaEmision: datetime  # Usar str para fechas en Pydantic
 
     class Config:
