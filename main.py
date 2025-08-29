@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine
 from models import Base
@@ -45,7 +46,19 @@ def create_paciente(paciente: schemas.PacienteCreate, db: Session = Depends(get_
     db_paciente = crud.get_paciente(db, paciente_id=paciente.idPaciente)
     if db_paciente:                                                             #validacion
         raise HTTPException(status_code=400, detail="Paciente ya registrado")
-    return crud.create_paciente(db=db, paciente=paciente), {"detail": "Paciente creado correctamente"}
+    else: 
+        paciente_creado = crud.create_paciente(db=db, paciente=paciente)
+
+        return JSONResponse(status_code=201, content={
+        "detail": "Paciente creado correctamente",
+        "data": {
+        "idPaciente": paciente_creado.idPaciente,
+        "nombrePaciente": paciente_creado.nombrePaciente,
+        "correoPaciente": paciente_creado.correoPaciente
+                }
+                                                     }
+                            )
+
 
 @app.get("/pacientes/", response_model=list[schemas.Paciente], tags=["Pacientes"])
 def read_pacientes(db: Session = Depends(get_db)):
@@ -72,14 +85,24 @@ def update_paciente(paciente_id: str, paciente: schemas.PacienteCreate, db: Sess
         raise HTTPException(status_code=404, detail="Paciente no encontrado")
     return db_paciente, {"detail": "Paciente actualizado correctamente"}
 
-#Creamos rutas para los medicos
+#Creamos rutas para los medicos.
 
 @app.post("/medicos/", response_model=schemas.Medico, tags=["Médicos"])
 def create_medico(medico: schemas.MedicoCreate, db: Session = Depends(get_db)):
     db_medico = crud.get_medico(db, medico_id=medico.idMedico)
     if db_medico:                                                             #validacion
         raise HTTPException(status_code=400, detail="Médico ya registrado")
-    return crud.create_medico(db=db, medico=medico), {"detail": "Médico creado correctamente"}
+    else:
+        medico_creado = crud.create_medico(db=db, medico=medico)
+        return JSONResponse(status_code=201, content={
+        "detail" : "Medico creado cerractamente",
+        "Cuerpo de la respuesta": {
+            "Cedula del Medico": medico_creado.idMedico,
+            "Nombre del Medico": medico_creado.nombreMedico,
+            "Correo del Medico": medico_creado.correoMedico,
+
+        }
+        })
 
 @app.get("/medicos/", response_model=list[schemas.Medico], tags=["Médicos"])
 def read_medicos(db: Session = Depends(get_db)):
@@ -138,6 +161,7 @@ def update_enfermera(enfermera_id: int, enfermera: schemas.EnfermeraCreate, db: 
     db_enfermera = crud.update_enfermera(db, enfermera_id=enfermera_id, enfermera=enfermera)
     if db_enfermera is None:
         raise HTTPException(status_code=404, detail="Enfermera no encontrada")
-    return db_enfermera, {"detail": "Enfermera actualizada correctamente"}
+    else: 
+        return JSONResponse(status_code=200, content={"detail": "Enfermera actualizada correctamente", "data": db_enfermera}) 
 
 #creacion de rutas para las citas
