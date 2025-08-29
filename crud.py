@@ -108,3 +108,96 @@ def delete_enfermera(db: Session, enfermera_id: str):
         db.delete(db_enfermera)
         db.commit()
     return db_enfermera
+
+#A partir de aqui hacemos metodos para las citas
+
+def create_agendar_cita(db: Session, cita: AgendarCitaCreate):
+    new_cita = AgendarCita(
+        idPaciente = str(cita.idPaciente),
+        idMedico = str(cita.idMedico),
+        fechaAgendamiento = cita.fechaAgendamiento,
+        motivoConsulta = cita.motivoConsulta
+    )
+    db.add(new_cita)
+    db.commit()
+    db.refresh(new_cita)
+    return new_cita
+
+def get_agendar_cita(db: Session, cita_id: int):
+    return db.query(AgendarCita).filter(AgendarCita.idCita == cita_id).first()
+
+def get_agendar_citas(db: Session):
+    return db.query(AgendarCita).all()
+
+def update_agendar_cita(db: Session, cita_id: int, cita: AgendarCitaCreate):
+    db_cita = db.query(AgendarCita).filter(AgendarCita.idCita == cita_id).first()
+    if db_cita:
+        db_cita.idPaciente = str(cita.idPaciente)
+        db_cita.idMedico = str(cita.idMedico)
+        db_cita.fechaAgendamiento = cita.fechaAgendamiento
+        db_cita.motivoConsulta = cita.motivoConsulta
+        db.commit()
+        db.refresh(db_cita)
+    return db_cita
+
+def delete_agendar_cita(db: Session, cita_id: int):
+    db_cita = db.query(AgendarCita).filter(AgendarCita.idCita == cita_id).first()
+    if db_cita:
+        db.delete(db_cita)
+        db.commit()
+    return db_cita
+
+#A partir de aqui hacemos metodos para los diagnosticos
+
+def create_diagnostico(db: Session, diagnostico: DiagnosticoCreate):
+    new_diagnostico = Diagnostico(
+        idCita = diagnostico.idCita,
+        idMedico = str(diagnostico.idMedico),
+        idPaciente = str(diagnostico.idPaciente),
+        idEnfermera = str(diagnostico.idEnfermera),
+        descripcionDiagnostico = diagnostico.descripcionDiagnostico
+    )
+    db.add(new_diagnostico)
+    db.commit()
+    db.refresh(new_diagnostico)
+    return new_diagnostico
+
+def get_diagnostico(db: Session, diagnostico_id: int):
+    return db.query(Diagnostico).filter(Diagnostico.idDiagnostico == diagnostico_id).first()
+
+def get_diagnosticos(db: Session):
+    return db.query(Diagnostico).all()
+
+def delete_diagnostico(db: Session, diagnostico_id: int):
+    db_diagnostico = db.query(Diagnostico).filter(Diagnostico.idDiagnostico == diagnostico_id).first()
+    if db_diagnostico:
+        db.delete(db_diagnostico)
+        db.commit()
+    return db_diagnostico
+
+#A partir de aqui hacemos metodos para las facturas
+def create_factura(db: Session, factura: FacturaCreate):
+    new_factura = Factura(
+        idPaciente = str(factura.idPaciente),
+        idCita = factura.idCita,
+        estadoFactura = factura.estadoFactura,
+        fechaVencimiento = factura.fechaVencimiento,
+        montoTotal = factura.montoTotal
+    )
+    db.add(new_factura)
+    db.commit()
+    db.refresh(new_factura)
+    return new_factura
+
+def get_factura(db: Session, factura_id: int):
+    return db.query(Factura).filter(Factura.idFactura == factura_id).first()
+
+def get_facturas(db: Session):
+    return db.query(Factura).all()
+
+def delete_factura(db: Session, factura_id: int):
+    db_factura = db.query(Factura).filter(Factura.idFactura == factura_id).first()
+    if db_factura:
+        db.delete(db_factura)
+        db.commit()
+    return db_factura
