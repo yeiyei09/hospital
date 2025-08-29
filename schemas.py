@@ -10,10 +10,9 @@ class PacienteCreate(PacienteBase):
     pass
 
 class Paciente(PacienteBase):
-    id: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class MedicoBase(BaseModel):
     idMedico: str
@@ -25,12 +24,12 @@ class MedicoCreate(MedicoBase):
     pass
 
 class Medico(MedicoBase):
-    id: str
 
     class Config:
         orm_mode = True
 
 class EnfermeraBase(BaseModel):
+    idEnfermera: str
     nombreEnfermera: str
     area: str
     correoEnfermera: str
@@ -39,7 +38,6 @@ class EnfermeraCreate(EnfermeraBase):
     pass
 
 class Enfermera(EnfermeraBase):
-    id: int
 
     class Config:
         orm_mode = True
@@ -62,9 +60,9 @@ class AgendarCita(AgendarCitaBase):
 
 class DiagnosticoBase(BaseModel):
     idCita: int
-    idMedico: int
+    idMedico: str
     idPaciente: str
-    idEnfermera: int
+    idEnfermera: str
     fechaEmision: date  # Usar str para fechas en Pydantic
     descripcionDiagnostico: str
 

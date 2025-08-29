@@ -39,7 +39,7 @@ def delete_paciente(db: Session, paciente_id: str):
 
 def create_medico(db: Session, medico: MedicoCreate):
     new_medico = Medico(
-        id = str(medico.idMedico),
+        idMedico = str(medico.idMedico),
         especializacion=medico.especializacion,
         nombreMedico=medico.nombreMedico,
         correoMedico=medico.correoMedico
@@ -76,6 +76,7 @@ def delete_medico(db: Session, medico_id: str):
 
 def create_enfermera(db: Session, enfermera: EnfermeraCreate):
     new_enfermera = Enfermera(
+        idEnfermera = str(enfermera.idEnfermera),
         nombreEnfermera=enfermera.nombreEnfermera,
         area = enfermera.area,
         correoEnfermera=enfermera.correoEnfermera
@@ -85,13 +86,13 @@ def create_enfermera(db: Session, enfermera: EnfermeraCreate):
     db.refresh(new_enfermera)
     return new_enfermera
 
-def get_enfermera(db: Session, enfermera_id: int):
+def get_enfermera(db: Session, enfermera_id: str):
     return db.query(Enfermera).filter(Enfermera.idEnfermera == enfermera_id).first()
 
 def get_enfermeras(db: Session):
     return db.query(Enfermera).all()
 
-def update_enfermera(db: Session, enfermera_id: int, enfermera: EnfermeraCreate):
+def update_enfermera(db: Session, enfermera_id: str, enfermera: EnfermeraCreate):
     db_enfermera = db.query(Enfermera).filter(Enfermera.idEnfermera == enfermera_id).first()
     if db_enfermera:
         db_enfermera.nombreEnfermera = enfermera.nombreEnfermera
@@ -101,7 +102,7 @@ def update_enfermera(db: Session, enfermera_id: int, enfermera: EnfermeraCreate)
         db.refresh(db_enfermera)
     return db_enfermera
 
-def delete_enfermera(db: Session, enfermera_id: int):
+def delete_enfermera(db: Session, enfermera_id: str):
     db_enfermera = db.query(Enfermera).filter(Enfermera.idEnfermera == enfermera_id).first()
     if db_enfermera:
         db.delete(db_enfermera)
