@@ -1,11 +1,10 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-from database import SessionLocal, engine
-from models import Base
+from database import SessionLocal
 import crud, schemas
 
-Base.metadata.create_all(bind=engine)
+
 from fastapi import FastAPI
 
 app = FastAPI(
@@ -51,7 +50,9 @@ def get_db():
         
 @app.post("/pacientes/", response_model=schemas.Paciente, tags=["Pacientes"])
 def create_paciente(paciente: schemas.PacienteCreate, db: Session = Depends(get_db)):
+    # Busca en la base de datos si ya existe un paciente con la misma cédula (idPaciente).
     db_paciente = crud.get_paciente(db, paciente_id=paciente.idPaciente)
+    # Si el paciente ya está registrado, lanza una excepción HTTP con código 400 (Bad Request)
     if db_paciente:                                                             #validacion
         raise HTTPException(status_code=400, detail="Paciente ya registrado")
     else: 
