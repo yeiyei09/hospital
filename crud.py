@@ -92,6 +92,9 @@ def get_enfermera(db: Session, enfermera_id: str):
 def get_enfermeras(db: Session):
     return db.query(Enfermera).all()
 
+def get_enfermeras_por_area(db: Session, area: str):
+    return db.query(Enfermera).filter(Enfermera.area == area).all()
+
 def update_enfermera(db: Session, enfermera_id: str, enfermera: EnfermeraCreate):
     db_enfermera = db.query(Enfermera).filter(Enfermera.idEnfermera == enfermera_id).first()
     if db_enfermera:
