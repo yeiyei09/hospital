@@ -492,3 +492,5 @@ def delete_factura(factura_id: int, db: Session = Depends (get_db)):
                 "Monto Total": db_factura.montoTotal
             }
         })
+        
+#
