@@ -231,6 +231,13 @@ def read_one_enfermera(enfermera_id: int, db: Session = Depends(get_db)):
                 "correo de enfermera": db_enfermera.correoEnfermera
             }
         })
+    
+@app.get("/enfermeras/area/{area}", response_model=list[schemas.Enfermera], tags=["Enfermeras"])
+def read_enfermeras_por_area(area: str, db: Session = Depends(get_db)):
+    db_enfermeras_area = crud.get_enfermeras_por_area(db, area=area)
+    if not db_enfermeras_area:
+        raise HTTPException(status_code=404, detail="No hay enfermeras registradas en esta area")
+    return db_enfermeras_area
 
 @app.delete("/enfermeras/{enfermera_id}", response_model=schemas.Enfermera, tags=["Enfermeras"])
 def delete_enfermera(enfermera_id: int, db: Session = Depends(get_db)):
