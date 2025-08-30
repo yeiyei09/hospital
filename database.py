@@ -5,3 +5,5 @@ DATABASE_URL = "mssql+pyodbc://@localhost\SQLEXPRESS/CentroSalud?driver=ODBC+Dri
 engine = create_engine(DATABASE_URL)
 Base = declarative_base()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+#

@@ -50,4 +50,5 @@ class Factura(Base):
     fechaEmision = Column(DateTime, default=datetime.now)  # Aquí se replica GETDATE()
     fechaVencimiento = Column(Date, index=True)
     montoTotal = Column(Integer, index=True)
-    
+
+#

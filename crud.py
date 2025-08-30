@@ -201,3 +201,5 @@ def delete_factura(db: Session, factura_id: int):
         db.delete(db_factura)
         db.commit()
     return db_factura
+
+#
