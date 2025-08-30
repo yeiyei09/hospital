@@ -60,18 +60,19 @@ def create_paciente(paciente: schemas.PacienteCreate, db: Session = Depends(get_
         return JSONResponse(status_code=201, content={
         "detail": "Paciente creado correctamente",
         "data": {
-        "Cedula paciente": paciente_creado.idPaciente,
-        "nombre de paciente": paciente_creado.nombrePaciente,
-        "correo de paciente": paciente_creado.correoPaciente
-                }
-                                                     }
-                            )
+            "Cedula paciente": paciente_creado.idPaciente,
+            "nombre de paciente": paciente_creado.nombrePaciente,
+            "correo  de paciente": paciente_creado.correoPaciente
+        }
+        })
 
 
 
 @app.get("/pacientes/", response_model=list[schemas.Paciente], tags=["Pacientes"])
 def read_all_pacientes(db: Session = Depends(get_db)):
     pacientes_db = crud.get_pacientes(db)
+    if not pacientes_db:
+        raise HTTPException(status_code=404, detail="No hay pacientes registrados")
     return pacientes_db
 
 @app.get("/pacientes/{paciente_id}", response_model=schemas.Paciente, tags=["Pacientes"])
@@ -140,6 +141,8 @@ def create_medico(medico: schemas.MedicoCreate, db: Session = Depends(get_db)):
 @app.get("/medicos/", response_model=list[schemas.Medico], tags=["Médicos"])
 def read_all_medicos(db: Session = Depends(get_db)):
     dbGetMedicos = crud.get_medicos(db)
+    if not dbGetMedicos:
+        raise HTTPException(status_code=404, detail="No hay medicos registrados")
     return dbGetMedicos
 
 @app.get("/medicos/{medico_id}", response_model=schemas.Medico, tags=["Médicos"])
@@ -209,6 +212,8 @@ def create_enfermera(enfermera: schemas.EnfermeraCreate, db: Session = Depends(g
 @app.get("/enfermeras/", response_model=list[schemas.Enfermera], tags=["Enfermeras"])
 def read_all_enfermeras(db: Session = Depends(get_db)):
     dbGetEnfermeras = crud.get_enfermeras(db)
+    if not dbGetEnfermeras:
+        raise HTTPException(status_code=404, detail="No hay enfermeras registradas")
     return dbGetEnfermeras
 
 @app.get("/enfermeras/{enfermera_id}", response_model=schemas.Enfermera, tags=["Enfermeras"])
@@ -262,7 +267,13 @@ def update_enfermera(enfermera_id: int, enfermera: schemas.EnfermeraCreate, db: 
 
 @app.post("/citas/", response_model=schemas.AgendarCita, tags=["Citas"])
 def create_cita(cita: schemas.AgendarCitaCreate, db: Session = Depends(get_db)):
-    cita_creada = crud.create_agendar_cita(db=db, cita=cita)
+    paciente = crud.get_paciente(db, paciente_id=cita.idPaciente)
+    medico = crud.get_medico(db, medico_id=cita.idMedico)
+    if not paciente and not medico:
+        raise HTTPException(status_code=400, detail="Paciente y medico no existen, intenta con un paciente y medico que ya esten registrados")
+    elif not medico or not paciente:
+        raise HTTPException(status_code=400, detail="Médico o paciente no existe, intenta con un médico o paciente que ya este registrado")
+    cita_creada = crud.create_agendar_cita(db=db, cita=cita)    
     if cita_creada is None:                                                             #validacion
         raise HTTPException(status_code=400, detail="Error al crear la cita")
     else:
@@ -281,6 +292,8 @@ def create_cita(cita: schemas.AgendarCitaCreate, db: Session = Depends(get_db)):
 @app.get("/citas/", response_model=list[schemas.AgendarCita], tags=["Citas"])
 def read_all_citas(db: Session = Depends(get_db)):
     dbGetCitas = crud.get_agendar_citas(db)
+    if not dbGetCitas:
+        raise HTTPException(status_code=404, detail="No hay citas registradas")
     return dbGetCitas
 
 @app.get("/citas/{cita_id}", response_model=schemas.AgendarCita, tags=["Citas"])
@@ -340,6 +353,14 @@ def delete_cita(cita_id: int, db: Session = Depends(get_db)):
 
 @app.post("/diagnosticos/", response_model=schemas.Diagnostico, tags=["Diagnósticos"])
 def create_diagnostico(diagnostico: schemas.DiagnosticoCreate, db: Session = Depends(get_db)):
+    paciente = crud.get_paciente(db, paciente_id=diagnostico.idPaciente)
+    medico = crud.get_medico(db, medico_id=diagnostico.idMedico)
+    enfermera = crud.get_enfermera(db, enfermera_id=diagnostico.idEnfermera)
+    cita = crud.get_agendar_cita(db, cita_id=diagnostico.idCita)
+    if not paciente and not medico and not enfermera and not cita:
+        raise HTTPException(status_code=400, detail="Paciente, medico, enfermera y cita no existen, intenta con un paciente, medico, enfermera y cita que ya esten registrados")
+    elif not medico or not paciente or not enfermera or not cita:
+        raise HTTPException(status_code=400, detail="Médico, paciente, enfermera o cita no existe, intenta con un médico, paciente, enfermera o cita que ya este registrado")
     diagnostico_creado = crud.create_diagnostico(db=db, diagnostico=diagnostico)
     if diagnostico_creado is None:                                                             #validacion
         raise HTTPException(status_code=400, detail="Error al crear el diagnóstico")
@@ -360,6 +381,8 @@ def create_diagnostico(diagnostico: schemas.DiagnosticoCreate, db: Session = Dep
 @app.get("/diagnosticos/", response_model=list[schemas.Diagnostico], tags=["Diagnósticos"])
 def read_all_diagnosticos(db: Session = Depends(get_db)):
     dbGetDiagnosticos = crud.get_diagnosticos(db)
+    if not dbGetDiagnosticos:
+        raise HTTPException(status_code=404, detail="No hay diagnósticos registrados")
     return dbGetDiagnosticos
 
 @app.get("/diagnosticos/{diagnostico_id}", response_model=schemas.Diagnostico, tags=["Diagnósticos"])
@@ -404,6 +427,12 @@ def delete_diagnostico(diagnostico_id: int, db: Session = Depends (get_db)):
 
 @app.post("/facturas/", response_model=schemas.Factura, tags=["Facturas"])
 def create_factura(factura: schemas.FacturaCreate, db: Session = Depends(get_db)):
+    paciente = crud.get_paciente(db, paciente_id=factura.idPaciente)
+    cita = crud.get_agendar_cita(db, cita_id=factura.idCita)
+    if not paciente and not cita:
+        raise HTTPException(status_code=400, detail="Paciente y cita no existen, intenta con un paciente y cita que ya esten registrados")
+    elif not cita or not paciente:
+        raise HTTPException(status_code=400, detail="Cita o paciente no existe, intenta con una cita o paciente que ya este registrado")
     factura_creada = crud.create_factura(db=db, factura=factura)
     if factura_creada is None:                                                             #validacion
         raise HTTPException(status_code=400, detail="Error al crear la factura")
@@ -424,6 +453,8 @@ def create_factura(factura: schemas.FacturaCreate, db: Session = Depends(get_db)
 @app.get("/facturas/", response_model=list[schemas.Factura], tags=["Facturas"])
 def read_all_facturas(db: Session = Depends(get_db)):
     dbGetFacturas = crud.get_facturas(db)
+    if not dbGetFacturas:
+        raise HTTPException(status_code=404, detail="No hay facturas registradas")
     return dbGetFacturas
 
 @app.get("/facturas/{factura_id}", response_model=schemas.Factura, tags=["Facturas"])
