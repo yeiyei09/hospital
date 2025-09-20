@@ -29,14 +29,14 @@ def update_paciente(db: Session, paciente_id: str, paciente: PacienteCreate):
         db.commit()
         db.refresh(db_paciente)
     return db_paciente
-
+ 
 def delete_paciente(db: Session, paciente_id: str):
     db_paciente = db.query(Paciente).filter(Paciente.idPaciente == paciente_id).first()
     if db_paciente:
         db.delete(db_paciente)
         db.commit()
     return db_paciente
-
+ 
 #A partir de aqui hacemos metodos para los medicos 
 
 def create_medico(db: Session, medico: MedicoCreate):

@@ -2,7 +2,7 @@
 Proyecto para trabajar con APIs en un programa para un hospital
 
 AUTORES: Andres Felipe Gallego García y Yefferson Gómez Ramirez.
-
+ 
 TITULO DEL PROYECTO: Hospital/Clinica
 
 DESCRIPCIÓN: Este proyecto está orientado al entorno hospitalario o clínico. Permite gestionar empleados y pacientes, registrar agendamientos de citas médicas, diagnósticos posteriores a la consulta y generar facturas que detallan el valor de la atención junto con el motivo de la misma. Además, facilita el seguimiento del historial clínico y administrativo de cada proceso dentro de la entidad, manteniendo un control sobre los recursos humanos disponibles para garantizar una atención eficiente.

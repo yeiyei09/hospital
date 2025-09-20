@@ -74,7 +74,7 @@ class DiagnosticoBase(BaseModel):
 
 class DiagnosticoCreate(DiagnosticoBase):
     pass
-
+ 
 class Diagnostico(DiagnosticoBase):
     idDiagnostico: int
     fechaDiagnostico: datetime  # Usar str para fechas en Pydantic

@@ -11,7 +11,7 @@ router = APIRouter(
     prefix="/diagnosticos",
     tags=["Diagnosticos"]
 )
-
+ 
 #Aqui empiezan las rutas para los diagnosticos
 
 @router.post("/diagnosticos/", response_model=schemas.Diagnostico, tags=["Diagnósticos"])

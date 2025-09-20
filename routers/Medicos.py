@@ -11,7 +11,7 @@ router = APIRouter(
     prefix="/medicos",
     tags=["Médicos"]
 )
-
+ 
 #Creamos rutas para los medicos.
 
 @router.post("/medicos/", response_model=schemas.Medico, tags=["Médicos"])

@@ -15,7 +15,7 @@ class Medico(Base):
     especializacion = Column(String, index=True)
     nombreMedico = Column(String, index=True)
     correoMedico = Column(String, index=True)
-
+ 
 class Enfermera(Base):
     __tablename__ = 'enfermeras'
     idEnfermera = Column(String, primary_key=True, index=True)

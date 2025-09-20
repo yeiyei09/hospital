@@ -11,7 +11,7 @@ router = APIRouter(
     prefix="/facturas",
     tags=["Facturas"]
 )
-
+ 
 #aqui empiezan las rutas para las facturas
 
 @router.post("/facturas/", response_model=schemas.Factura, tags=["Facturas"])

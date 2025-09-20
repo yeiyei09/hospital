@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from database import SessionLocal, get_db
 import crud, schemas
-
+ 
 # Creamos el router para los pacientes
 # Define un prefijo para las rutas y etiquetas para la documentación
 # En todas las rutas usamos router en lugar de app ya que aqui se abre otra instancia de APIRouter

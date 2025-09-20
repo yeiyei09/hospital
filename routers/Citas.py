@@ -37,7 +37,7 @@ def create_cita(cita: schemas.AgendarCitaCreate, db: Session = Depends(get_db)):
             "Motivo de Consulta": cita_creada.motivoConsulta
         }
         })
-    
+     
 @router.get("/citas/", response_model=list[schemas.AgendarCita], tags=["Citas"])
 def read_all_citas(db: Session = Depends(get_db)):
     dbGetCitas = crud.get_agendar_citas(db)
