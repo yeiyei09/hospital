@@ -2,6 +2,7 @@ from datetime import datetime
 from sqlalchemy import Column, Integer, String, Date, ForeignKey, DateTime
 from database import Base
 
+# Definición de los modelos de la base de datos identicos a las tablas en SQL Server
 class Paciente(Base):
     __tablename__ = 'pacientes'
     idPaciente = Column(String, primary_key=True, index=True)
