@@ -40,7 +40,7 @@ class EnfermeraBase(BaseModel):
     nombreEnfermera: str
     area: str
     correoEnfermera: str
-
+ 
 class EnfermeraCreate(EnfermeraBase):
     pass
 

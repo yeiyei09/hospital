@@ -8,7 +8,7 @@ class Paciente(Base):
     idPaciente = Column(String, primary_key=True, index=True)
     nombrePaciente = Column(String, index=True)
     correoPaciente = Column(String, index=True)
-
+ 
 class Medico(Base):
     __tablename__ = 'medicos'
     idMedico = Column(String, primary_key=True, index=True)

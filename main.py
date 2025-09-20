@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from database import SessionLocal
 import crud, schemas 
-
+ 
 # Importar los routers
 from routers import pacientes, Medicos, Enfermeras, Citas, Diagnosticos, Facturas
 

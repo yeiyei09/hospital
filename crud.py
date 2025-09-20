@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from models import Paciente, Medico, Enfermera, AgendarCita, Diagnostico, Factura
 from schemas import PacienteCreate, MedicoCreate, EnfermeraCreate, AgendarCitaCreate, DiagnosticoCreate, FacturaCreate
-
+ 
 # A partir de aqui hacemos metodos para los pacientes
 # Metodos para crear, leer, actualizar y eliminar pacientes
 def create_paciente(db: Session, paciente: PacienteCreate):

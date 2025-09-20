@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from database import SessionLocal, get_db
-import crud, schemas
+import crud, schemas 
  
 # Creamos el router para los pacientes
 # Define un prefijo para las rutas y etiquetas para la documentación
