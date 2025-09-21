@@ -1,9 +1,8 @@
-import schemas
+import crud
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-import crud
 from database import SessionLocal, get_db
 
 router = APIRouter(prefix="/citas", tags=["Citas"])
@@ -13,7 +12,7 @@ router = APIRouter(prefix="/citas", tags=["Citas"])
 
 @router.post("/citas/", response_model=schemas.AgendarCita, tags=["Citas"])
 def create_cita(
-    cita: schemas.AgendarCitaCreate, db: Session = Depends(get_db)
+    cita: cita.AgendarCitaCreate, db: Session = Depends(get_db)
 ) -> JSONResponse:
     paciente = crud.get_paciente(db, paciente_id=cita.idPaciente)
     medico = crud.get_medico(db, medico_id=cita.idMedico)
