@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Column, String
+from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -23,3 +23,13 @@ class Medico(Base):
     # Relaciones
     citas = relationship("Cita", back_populates="medico")
     diagnosticos = relationship("Diagnostico", back_populates="medico")
+
+    # Campos de auditoría
+    id_usuario_creacion = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id_usuario"), index=True
+    )
+    id_usuario_actualizacion = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id_usuario"), index=True
+    )
+    fecha_creacion = Column(DateTime, index=True)
+    fecha_actualizacion = Column(DateTime, index=True)

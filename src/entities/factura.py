@@ -28,3 +28,13 @@ class Factura(Base):
     # Relaciones
     paciente = relationship("Paciente", back_populates="facturas")
     cita = relationship("Cita", back_populates="facturas")
+
+    # Campos de auditoría
+    id_usuario_creacion = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id_usuario"), index=True
+    )
+    id_usuario_actualizacion = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id_usuario"), index=True
+    )
+    fecha_creacion = Column(DateTime, index=True)
+    fecha_actualizacion = Column(DateTime, index=True)
