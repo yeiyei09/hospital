@@ -1,10 +1,10 @@
 from sqlalchemy.orm import Session
 
-from entities import cita
+from entities.cita import Cita as cita
 
 
 def create_agendar_cita(db: Session, cita: cita):
-    new_cita = AgendarCita(
+    new_cita = cita(
         idPaciente=str(cita.idPaciente),
         idMedico=str(cita.idMedico),
         fechaAgendamiento=cita.fechaAgendamiento,
@@ -17,15 +17,15 @@ def create_agendar_cita(db: Session, cita: cita):
 
 
 def get_agendar_cita(db: Session, cita_id: int):
-    return db.query(AgendarCita).filter(AgendarCita.idCita == cita_id).first()
+    return db.query(cita).filter(cita.idCita == cita_id).first()
 
 
 def get_agendar_citas(db: Session):
-    return db.query(AgendarCita).all()
+    return db.query(cita).all()
 
 
-def update_agendar_cita(db: Session, cita_id: int, cita: AgendarCitaCreate):
-    db_cita = db.query(AgendarCita).filter(AgendarCita.idCita == cita_id).first()
+def update_agendar_cita(db: Session, cita_id: int, cita: cita):
+    db_cita = db.query(cita).filter(cita.idCita == cita_id).first()
     if db_cita:
         db_cita.idPaciente = str(cita.idPaciente)
         db_cita.idMedico = str(cita.idMedico)
@@ -37,7 +37,7 @@ def update_agendar_cita(db: Session, cita_id: int, cita: AgendarCitaCreate):
 
 
 def delete_agendar_cita(db: Session, cita_id: int):
-    db_cita = db.query(AgendarCita).filter(AgendarCita.idCita == cita_id).first()
+    db_cita = db.query(cita).filter(cita.idCita == cita_id).first()
     if db_cita:
         db.delete(db_cita)
         db.commit()
