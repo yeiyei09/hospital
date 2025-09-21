@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-from database import SessionLocal, get_db
+from database.connection import SessionLocal, get_db
 from entities.medico import Medico as medico_entity
 import controller.medico as medico_controller
 

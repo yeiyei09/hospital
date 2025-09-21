@@ -3,7 +3,7 @@ import uuid
 from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 
-from database import Base
+from database.connection import Base
 
 
 class Usuario(Base):
