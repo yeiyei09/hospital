@@ -4,7 +4,7 @@ from sqlalchemy import Column, DateTime, ForeignKey, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
-from database import Base
+from database.connection import Base
 
 
 class Diagnostico(Base):
@@ -27,6 +27,17 @@ class Diagnostico(Base):
     descripcionDiagnostico = Column(String)
     fechaDiagnostico = Column(DateTime, index=True)
 
+    # Campos de auditoría
+    id_usuario_creacion = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id_usuario"), index=True
+    )
+    id_usuario_actualizacion = Column(
+        UUID(as_uuid=True), ForeignKey("usuarios.id_usuario"), index=True
+    )
+    fecha_creacion = Column(DateTime, index=True)
+    fecha_actualizacion = Column(DateTime, index=True)
+
+    # Relaciones
     cita = relationship("Cita", back_populates="diagnosticos")
     medico = relationship("Medico", back_populates="diagnosticos")
     paciente = relationship("Paciente", back_populates="diagnosticos")
