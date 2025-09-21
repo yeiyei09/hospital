@@ -2,44 +2,51 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from database import SessionLocal, get_db
-import crud, schemas 
- 
-# Creamos el router para los pacientes
-# Define un prefijo para las rutas y etiquetas para la documentación
-# En todas las rutas usamos router en lugar de app ya que aqui se abre otra instancia de APIRouter
-router = APIRouter(
-    prefix="/pacientes",
-    tags=["Pacientes"]
-)
+from entities.paciente import Paciente as paciente_entity
+import controller.paciente as paciente_controller
 
-#Creamos rutas para los pacientes     
-@router.post("/pacientes/", response_model=schemas.Paciente, tags=["Pacientes"])
-def create_paciente(paciente: schemas.PacienteCreate, db: Session = Depends(get_db)):
-    # Busca en la base de datos si ya existe un paciente con la misma cédula (idPaciente).
-    db_paciente = crud.get_paciente(db, paciente_id=paciente.idPaciente)
-    # Si el paciente ya está registrado, lanza una excepción HTTP con código 400 (Bad Request)
-    if db_paciente:                                                             #validacion
+"""Creamos el router para los pacientes
+Define un prefijo para las rutas y etiquetas para la documentación
+En todas las rutas usamos router en lugar de app ya que aqui se abre otra instancia de APIRouter"""
+
+router = APIRouter(prefix="/pacientes", tags=["Pacientes"])
+
+
+@router.post("/pacientes/", response_model=paciente_entity, tags=["Pacientes"])
+def create_paciente(paciente: paciente_entity, db: Session = Depends(get_db)):
+    """Busca en la base de datos si ya existe un paciente con la misma cédula (idPaciente)"""
+
+    db_paciente = paciente_controller.get_paciente(db, paciente_id=paciente.idPaciente)
+
+    """Si el paciente ya está registrado, lanza una excepción HTTP con código 400 (Bad Request)"""
+
+    if db_paciente:
+
         raise HTTPException(status_code=400, detail="Paciente ya registrado")
-    else: 
-        paciente_creado = crud.create_paciente(db=db, paciente=paciente)
+    else:
+        paciente_creado = paciente_controller.create_paciente(db=db, paciente=paciente)
 
-        return JSONResponse(status_code=201, content={
-        "detail": "Paciente creado correctamente",
-        "data": {
-            "Cedula paciente": paciente_creado.idPaciente,
-            "nombre de paciente": paciente_creado.nombrePaciente,
-            "correo  de paciente": paciente_creado.correoPaciente
-        }
-        })
+        return JSONResponse(
+            status_code=201,
+            content={
+                "detail": "Paciente creado correctamente",
+                "data": {
+                    "Cedula paciente": paciente.idPaciente,
+                    "nombre de paciente": paciente.nombrePaciente,
+                    "correo  de paciente": paciente.correoPaciente,
+                },
+            },
+        )
 
 
-
-@router.get("/pacientes/", response_model=list[schemas.Paciente], tags=["Pacientes"])
+@router.get("/pacientes/", response_model=list[paciente_entity], tags=["Pacientes"])
 def read_all_pacientes(db: Session = Depends(get_db)):
-    pacientes_db = crud.get_pacientes(db)
+    pacientes_db = paciente_controller.get_pacientes(db)
     if not pacientes_db:
         raise HTTPException(status_code=404, detail="No hay pacientes registrados")
     return pacientes_db
+
+
 """
     Obtiene todos los pacientes registrados en la base de datos.
 
@@ -53,47 +60,69 @@ def read_all_pacientes(db: Session = Depends(get_db)):
         HTTPException: Si no hay pacientes registrados, retorna un error 404 con el deta
 """
 
-@router.get("/pacientes/{paciente_id}", response_model=schemas.Paciente, tags=["Pacientes"])
+
+@router.get(
+    "/pacientes/{paciente_id}", response_model=paciente_entity, tags=["Pacientes"]
+)
 def read_one_paciente(paciente_id: str, db: Session = Depends(get_db)):
-    db_paciente = crud.get_paciente(db, paciente_id=paciente_id)
+    db_paciente = paciente_controller.get_paciente(db, paciente_id=paciente_id)
     if db_paciente is None:
         raise HTTPException(status_code=404, detail="Paciente no encontrado")
     else:
-        return JSONResponse(status_code=200, content={
-            "detail": "Paciente encontrado",
-            "data": {
-                "cedula paciente": db_paciente.idPaciente,
-                "nombre de paciente": db_paciente.nombrePaciente,
-                "correo de paciente": db_paciente.correoPaciente
-            }
-        })
+        return JSONResponse(
+            status_code=200,
+            content={
+                "detail": "Paciente encontrado",
+                "data": {
+                    "cedula paciente": db_paciente.idPaciente,
+                    "nombre de paciente": db_paciente.nombrePaciente,
+                    "correo de paciente": db_paciente.correoPaciente,
+                },
+            },
+        )
 
-@router.delete("/pacientes/{paciente_id}", response_model=schemas.Paciente, tags=["Pacientes"])
+
+@router.delete(
+    "/pacientes/{paciente_id}", response_model=paciente_entity, tags=["Pacientes"]
+)
 def delete_paciente(paciente_id: str, db: Session = Depends(get_db)):
-    db_paciente = crud.delete_paciente(db, paciente_id=paciente_id)
+    db_paciente = paciente_controller.delete_paciente(db, paciente_id=paciente_id)
     if db_paciente is None:
         raise HTTPException(status_code=404, detail="Paciente no encontrado")
     else:
-        return JSONResponse(status_code=200, content={
-            "detail": "Paciente eliminado correctamente",
-            "data": {
-                "Cedula paciente": db_paciente.idPaciente,
-                "Nombre de paciente": db_paciente.nombrePaciente,
-                "correo de paciente": db_paciente.correoPaciente
-            }
-        })
+        return JSONResponse(
+            status_code=200,
+            content={
+                "detail": "Paciente eliminado correctamente",
+                "data": {
+                    "Cedula paciente": db_paciente.idPaciente,
+                    "Nombre de paciente": db_paciente.nombrePaciente,
+                    "correo de paciente": db_paciente.correoPaciente,
+                },
+            },
+        )
 
-@router.put("/pacientes/{paciente_id}", response_model=schemas.Paciente, tags=["Pacientes"])
-def update_paciente(paciente_id: str, paciente: schemas.PacienteCreate, db: Session = Depends(get_db)):
-    db_paciente = crud.update_paciente(db, paciente_id=paciente_id, paciente=paciente)
+
+@router.put(
+    "/pacientes/{paciente_id}", response_model=paciente_entity, tags=["Pacientes"]
+)
+def update_paciente(
+    paciente_id: str, paciente: paciente_entity, db: Session = Depends(get_db)
+):
+    db_paciente = paciente_controller.update_paciente(
+        db, paciente_id=paciente_id, paciente=paciente
+    )
     if db_paciente is None:
         raise HTTPException(status_code=404, detail="Paciente no encontrado")
     else:
-        return JSONResponse(status_code=200, content={
-            "detail": "Paciente actualizado correctamente",
-            "data": {
-                "Cedula paciente": db_paciente.idPaciente,
-                "Nombre de paciente": db_paciente.nombrePaciente,
-                "correo de paciente": db_paciente.correoPaciente
-            }
-        })
+        return JSONResponse(
+            status_code=200,
+            content={
+                "detail": "Paciente actualizado correctamente",
+                "data": {
+                    "Cedula paciente": paciente.idPaciente,
+                    "Nombre de paciente": paciente.nombrePaciente,
+                    "correo de paciente": paciente.correoPaciente,
+                },
+            },
+        )
