@@ -1,22 +1,26 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
+import controller.factura as factura_controller
+import controller.paciente as paciente_controller
+import controller.cita as cita_controller
+from entities.factura import Factura as factura_entity
+from entities.paciente import Paciente as paciente_entity
 
-from database import SessionLocal, get_db
-from entities import Cita, Diagnostico, Enfermera, Factura, Medico, Paciente
+from database.connection import SessionLocal, get_db
 
-# Creamos el router para los pacientes
-# Define un prefijo para las rutas y etiquetas para la documentación
-# En todas las rutas usamos router en lugar de app ya que aqui se abre otra instancia de APIRouter
+"""Creamos el router para los pacientes
+
+Define un prefijo para las rutas y etiquetas para la documentación
+En todas las rutas usamos router en lugar de app ya que aqui se abre otra instancia de APIRouter"""
+
 router = APIRouter(prefix="/facturas", tags=["Facturas"])
 
-# aqui empiezan las rutas para las facturas
 
-
-@router.post("/facturas/", response_model=schemas.Factura, tags=["Facturas"])
-def create_factura(factura: schemas.FacturaCreate, db: Session = Depends(get_db)):
-    paciente = crud.get_paciente(db, paciente_id=factura.idPaciente)
-    cita = crud.get_agendar_cita(db, cita_id=factura.idCita)
+@router.post("/facturas/", response_model=factura_entity, tags=["Facturas"])
+def create_factura(factura: factura_entity, db: Session = Depends(get_db)):
+    paciente = paciente_controller.get_paciente(db, paciente_id=factura.idPaciente)
+    cita = cita_controller.get_agendar_cita(db, cita_id=factura.idCita)
     if not paciente and not cita:
         raise HTTPException(
             status_code=400,
@@ -27,7 +31,7 @@ def create_factura(factura: schemas.FacturaCreate, db: Session = Depends(get_db)
             status_code=400,
             detail="Cita o paciente no existe, intenta con una cita o paciente que ya este registrado",
         )
-    factura_creada = crud.create_factura(db=db, factura=factura)
+    factura_creada = factura_controller.create_factura(db=db, factura=factura)
     if factura_creada is None:  # validacion
         raise HTTPException(status_code=400, detail="Error al crear la factura")
     else:
@@ -36,29 +40,29 @@ def create_factura(factura: schemas.FacturaCreate, db: Session = Depends(get_db)
             content={
                 "detail": "Factura creada cerractamente",
                 "Cuerpo de la respuesta": {
-                    "ID de la Factura": factura_creada.idFactura,
-                    "Cedula del Paciente": factura_creada.idPaciente,
-                    "ID de la Cita": factura_creada.idCita,
-                    "Estado de la Factura": factura_creada.estadoFactura,
-                    "Fecha de Emision": str(factura_creada.fechaEmision),
-                    "Fecha de Vencimiento": str(factura_creada.fechaVencimiento),
-                    "Monto Total": factura_creada.montoTotal,
+                    "ID de la Factura": factura.idFactura,
+                    "Cedula del Paciente": factura.idPaciente,
+                    "ID de la Cita": factura.idCita,
+                    "Estado de la Factura": factura.estadoFactura,
+                    "Fecha de Emision": str(factura.fechaEmision),
+                    "Fecha de Vencimiento": str(factura.fechaVencimiento),
+                    "Monto Total": factura.montoTotal,
                 },
             },
         )
 
 
-@router.get("/facturas/", response_model=list[schemas.Factura], tags=["Facturas"])
+@router.get("/facturas/", response_model=list[factura_entity], tags=["Facturas"])
 def read_all_facturas(db: Session = Depends(get_db)):
-    dbGetFacturas = crud.get_facturas(db)
+    dbGetFacturas = factura_controller.get_facturas(db)
     if not dbGetFacturas:
         raise HTTPException(status_code=404, detail="No hay facturas registradas")
     return dbGetFacturas
 
 
-@router.get("/facturas/{factura_id}", response_model=schemas.Factura, tags=["Facturas"])
+@router.get("/facturas/{factura_id}", response_model=factura_entity, tags=["Facturas"])
 def read_one_factura(factura_id: int, db: Session = Depends(get_db)):
-    db_factura = crud.get_factura(db, factura_id=factura_id)
+    db_factura = factura_controller.get_factura(db, factura_id=factura_id)
     if db_factura is None:
         raise HTTPException(status_code=404, detail="Factura no encontrada")
     else:
@@ -79,10 +83,10 @@ def read_one_factura(factura_id: int, db: Session = Depends(get_db)):
 
 
 @router.delete(
-    "/facturas/{factura_id}", response_model=schemas.Factura, tags=["Facturas"]
+    "/facturas/{factura_id}", response_model=factura_entity, tags=["Facturas"]
 )
 def delete_factura(factura_id: int, db: Session = Depends(get_db)):
-    db_factura = crud.delete_factura(db, factura_id=factura_id)
+    db_factura = factura_controller.delete_factura(db, factura_id=factura_id)
     if db_factura is None:
         raise HTTPException(status_code=404, detail="Factura no encontrada")
     else:
