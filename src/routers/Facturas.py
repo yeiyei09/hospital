@@ -5,9 +5,8 @@ import controller.factura as factura_controller
 import controller.paciente as paciente_controller
 import controller.cita as cita_controller
 from entities.factura import Factura as factura_entity
-from entities.paciente import Paciente as paciente_entity
 
-from database.connection import SessionLocal, get_db
+from database.connection import get_db
 
 """Creamos el router para los pacientes
 
