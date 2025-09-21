@@ -1,14 +1,9 @@
-import controller.cita as cita_controller
-import controller.diagnostico as diagnostico_controller
 import controller.enfermera as enfermera_controller
-import controller.paciente as paciente_controller
-import controller.medico as medicos_controller
-import controller.factura as factura_controller
 from entities.enfermera import Enfermera as enfermera_entity
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-from database.connection import SessionLocal, get_db
+from database.connection import get_db
 
 # Creamos el router para los pacientes
 # Define un prefijo para las rutas y etiquetas para la documentación
