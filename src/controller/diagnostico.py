@@ -1,8 +1,9 @@
-# A partir de aqui hacemos metodos para los diagnosticos
+from sqlalchemy.orm import Session
+from entities.diagnostico import Diagnostico as diagnostico
 
 
-def create_diagnostico(db: Session, diagnostico: DiagnosticoCreate):
-    new_diagnostico = Diagnostico(
+def create_diagnostico(db: Session, diagnostico: diagnostico):
+    new_diagnostico = diagnostico(
         idCita=diagnostico.idCita,
         idMedico=str(diagnostico.idMedico),
         idPaciente=str(diagnostico.idPaciente),
@@ -17,20 +18,20 @@ def create_diagnostico(db: Session, diagnostico: DiagnosticoCreate):
 
 def get_diagnostico(db: Session, diagnostico_id: int):
     return (
-        db.query(Diagnostico)
-        .filter(Diagnostico.idDiagnostico == diagnostico_id)
+        db.query(diagnostico)
+        .filter(diagnostico.idDiagnostico == diagnostico_id)
         .first()
     )
 
 
 def get_diagnosticos(db: Session):
-    return db.query(Diagnostico).all()
+    return db.query(diagnostico).all()
 
 
 def delete_diagnostico(db: Session, diagnostico_id: int):
     db_diagnostico = (
-        db.query(Diagnostico)
-        .filter(Diagnostico.idDiagnostico == diagnostico_id)
+        db.query(diagnostico)
+        .filter(diagnostico.idDiagnostico == diagnostico_id)
         .first()
     )
     if db_diagnostico:
