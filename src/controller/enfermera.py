@@ -1,8 +1,9 @@
-# A partir de aqui hacemos metodos para las enfermeras
+from sqlalchemy.orm import Session
+from entities.enfermera import Enfermera as enfermera
 
 
-def create_enfermera(db: Session, enfermera: EnfermeraCreate):
-    new_enfermera = Enfermera(
+def create_enfermera(db: Session, enfermera: enfermera):
+    new_enfermera = enfermera(
         idEnfermera=str(enfermera.idEnfermera),
         nombreEnfermera=enfermera.nombreEnfermera,
         area=enfermera.area,
@@ -15,20 +16,20 @@ def create_enfermera(db: Session, enfermera: EnfermeraCreate):
 
 
 def get_enfermera(db: Session, enfermera_id: str):
-    return db.query(Enfermera).filter(Enfermera.idEnfermera == enfermera_id).first()
+    return db.query(enfermera).filter(enfermera.idEnfermera == enfermera_id).first()
 
 
 def get_enfermeras(db: Session):
-    return db.query(Enfermera).all()
+    return db.query(enfermera).all()
 
 
 def get_enfermeras_por_area(db: Session, area: str):
-    return db.query(Enfermera).filter(Enfermera.area == area).all()
+    return db.query(enfermera).filter(enfermera.area == area).all()
 
 
-def update_enfermera(db: Session, enfermera_id: str, enfermera: EnfermeraCreate):
+def update_enfermera(db: Session, enfermera_id: str, enfermera: enfermera):
     db_enfermera = (
-        db.query(Enfermera).filter(Enfermera.idEnfermera == enfermera_id).first()
+        db.query(enfermera).filter(enfermera.idEnfermera == enfermera_id).first()
     )
     if db_enfermera:
         db_enfermera.nombreEnfermera = enfermera.nombreEnfermera
@@ -41,7 +42,7 @@ def update_enfermera(db: Session, enfermera_id: str, enfermera: EnfermeraCreate)
 
 def delete_enfermera(db: Session, enfermera_id: str):
     db_enfermera = (
-        db.query(Enfermera).filter(Enfermera.idEnfermera == enfermera_id).first()
+        db.query(enfermera).filter(enfermera.idEnfermera == enfermera_id).first()
     )
     if db_enfermera:
         db.delete(db_enfermera)
