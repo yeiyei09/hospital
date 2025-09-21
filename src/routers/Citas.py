@@ -1,4 +1,9 @@
-import crud
+import controller.cita as cita
+import controller.diagnostico as diagnostico
+import controller.enfermera as enfermera
+import controller.paciente as paciente
+import controller.medico as medico
+import controller.factura as factura
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
@@ -10,7 +15,7 @@ router = APIRouter(prefix="/citas", tags=["Citas"])
 # Aqui empiezan las rutas para las citas
 
 
-@router.post("/citas/", response_model=schemas.AgendarCita, tags=["Citas"])
+@router.post("/citas/", response_model=cita.create_agendar_cita tags=["Citas"])
 def create_cita(
     cita: cita.AgendarCitaCreate, db: Session = Depends(get_db)
 ) -> JSONResponse:
@@ -44,6 +49,7 @@ def create_cita(
                 },
             },
         )
+    
 
 
 @router.get("/citas/", response_model=list[schemas.AgendarCita], tags=["Citas"])
