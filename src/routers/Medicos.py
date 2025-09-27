@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 
 import src.controller.medico as medico_controller
 from database.connection import get_db
+from src.auth.middleware import get_current_active_user
+from src.schemas.auth import UserResponse
 from src.schemas.medico import MedicoCreate, MedicoResponse
 
 """Creamos el router para los pacientes
@@ -17,8 +19,12 @@ router = APIRouter(prefix="/medicos", tags=["Médicos"])
 """Creamos rutas para los medicos"""
 
 
-@router.post("/medicos/", response_model=MedicoResponse, tags=["Médicos"])
-def create_medico(medico: MedicoCreate, db: Session = Depends(get_db)):
+@router.post("/", response_model=MedicoResponse, tags=["Médicos"])
+def create_medico(
+    medico: MedicoCreate,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
+):
     db_medico = medico_controller.get_medico(db, medico_id=medico.idMedico)
     if db_medico:
         raise HTTPException(status_code=400, detail="Médico ya registrado")
@@ -37,16 +43,23 @@ def create_medico(medico: MedicoCreate, db: Session = Depends(get_db)):
         )
 
 
-@router.get("/medicos/", response_model=list[MedicoResponse], tags=["Médicos"])
-def read_all_medicos(db: Session = Depends(get_db)):
+@router.get("/", response_model=list[MedicoResponse], tags=["Médicos"])
+def read_all_medicos(
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
+):
     dbGetMedicos = medico_controller.get_medicos(db)
     if not dbGetMedicos:
         raise HTTPException(status_code=404, detail="No hay medicos registrados")
     return dbGetMedicos
 
 
-@router.get("/medicos/{medico_id}", response_model=MedicoResponse, tags=["Médicos"])
-def read_one_medico(medico_id: int, db: Session = Depends(get_db)):
+@router.get("/{medico_id}", response_model=MedicoResponse, tags=["Médicos"])
+def read_one_medico(
+    medico_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
+):
     db_medico = medico_controller.get_medico(db, medico_id=medico_id)
     if db_medico is None:
         raise HTTPException(status_code=404, detail="Médico no encontrado")
@@ -65,8 +78,12 @@ def read_one_medico(medico_id: int, db: Session = Depends(get_db)):
         )
 
 
-@router.delete("/medicos/{medico_id}", response_model=MedicoResponse, tags=["Médicos"])
-def delete_medico(medico_id: int, db: Session = Depends(get_db)):
+@router.delete("/{medico_id}", response_model=MedicoResponse, tags=["Médicos"])
+def delete_medico(
+    medico_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
+):
     db_medico = medico_controller.delete_medico(db, medico_id=medico_id)
     if db_medico is None:
         raise HTTPException(status_code=404, detail="Médico no encontrado")
@@ -84,8 +101,13 @@ def delete_medico(medico_id: int, db: Session = Depends(get_db)):
         )
 
 
-@router.put("/medicos/{medico_id}", response_model=MedicoResponse, tags=["Médicos"])
-def update_medico(medico_id: int, medico: MedicoCreate, db: Session = Depends(get_db)):
+@router.put("/{medico_id}", response_model=MedicoResponse, tags=["Médicos"])
+def update_medico(
+    medico_id: int,
+    medico: MedicoCreate,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
+):
     db_medico = medico_controller.update_medico(db, medico_id=medico_id, medico=medico)
     if db_medico is None:
         raise HTTPException(status_code=404, detail="Médico no encontrado")

@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 
 import src.controller.enfermera as enfermera_controller
 from database.connection import get_db
+from src.auth.middleware import get_current_active_user
+from src.schemas.auth import UserResponse
 from src.schemas.enfermera import EnfermeraCreate, EnfermeraResponse
 
 # Creamos el router para los pacientes
@@ -14,8 +16,12 @@ router = APIRouter(prefix="/enfermeras", tags=["Enfermeras"])
 # creacion de rutas para las enfermeras
 
 
-@router.post("/enfermeras/", response_model=EnfermeraResponse, tags=["Enfermeras"])
-def create_enfermera(enfermera: EnfermeraCreate, db: Session = Depends(get_db)):
+@router.post("/", response_model=EnfermeraResponse, tags=["Enfermeras"])
+def create_enfermera(
+    enfermera: EnfermeraCreate,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
+):
     db_enfermera = enfermera_controller.get_enfermera(
         db, enfermera_id=enfermera.idEnfermera
     )
@@ -39,18 +45,23 @@ def create_enfermera(enfermera: EnfermeraCreate, db: Session = Depends(get_db)):
         )
 
 
-@router.get("/enfermeras/", response_model=list[EnfermeraResponse], tags=["Enfermeras"])
-def read_all_enfermeras(db: Session = Depends(get_db)):
+@router.get("/", response_model=list[EnfermeraResponse], tags=["Enfermeras"])
+def read_all_enfermeras(
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
+):
     dbGetEnfermeras = enfermera_controller.get_enfermeras(db)
     if not dbGetEnfermeras:
         raise HTTPException(status_code=404, detail="No hay enfermeras registradas")
     return dbGetEnfermeras
 
 
-@router.get(
-    "/enfermeras/{enfermera_id}", response_model=EnfermeraResponse, tags=["Enfermeras"]
-)
-def read_one_enfermera(enfermera_id: int, db: Session = Depends(get_db)):
+@router.get("/{enfermera_id}", response_model=EnfermeraResponse, tags=["Enfermeras"])
+def read_one_enfermera(
+    enfermera_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
+):
     db_enfermera = enfermera_controller.get_enfermera(db, enfermera_id=enfermera_id)
     if db_enfermera is None:
         raise HTTPException(status_code=404, detail="Enfermera no encontrada")
@@ -70,11 +81,15 @@ def read_one_enfermera(enfermera_id: int, db: Session = Depends(get_db)):
 
 
 @router.get(
-    "/enfermeras/area/{area}",
+    "/area/{area}",
     response_model=list[EnfermeraResponse],
     tags=["Enfermeras"],
 )
-def read_enfermeras_por_area(area: str, db: Session = Depends(get_db)):
+def read_enfermeras_por_area(
+    area: str,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
+):
     db_enfermeras_area = enfermera_controller.get_enfermeras_por_area(db, area=area)
     if not db_enfermeras_area:
         raise HTTPException(
@@ -83,10 +98,12 @@ def read_enfermeras_por_area(area: str, db: Session = Depends(get_db)):
     return db_enfermeras_area
 
 
-@router.delete(
-    "/enfermeras/{enfermera_id}", response_model=EnfermeraResponse, tags=["Enfermeras"]
-)
-def delete_enfermera(enfermera_id: int, db: Session = Depends(get_db)):
+@router.delete("/{enfermera_id}", response_model=EnfermeraResponse, tags=["Enfermeras"])
+def delete_enfermera(
+    enfermera_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
+):
     db_enfermera = enfermera_controller.delete_enfermera(db, enfermera_id=enfermera_id)
     if db_enfermera is None:
         raise HTTPException(status_code=404, detail="Enfermera no encontrada")
@@ -105,11 +122,12 @@ def delete_enfermera(enfermera_id: int, db: Session = Depends(get_db)):
         )
 
 
-@router.put(
-    "/enfermeras/{enfermera_id}", response_model=EnfermeraResponse, tags=["Enfermeras"]
-)
+@router.put("/{enfermera_id}", response_model=EnfermeraResponse, tags=["Enfermeras"])
 def update_enfermera(
-    enfermera_id: int, enfermera: EnfermeraCreate, db: Session = Depends(get_db)
+    enfermera_id: int,
+    enfermera: EnfermeraCreate,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
 ):
     db_enfermera = enfermera_controller.update_enfermera(
         db, enfermera_id=enfermera_id, enfermera=enfermera
