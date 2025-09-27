@@ -1,9 +1,10 @@
-import controller.enfermera as enfermera_controller
-from entities.enfermera import Enfermera as enfermera_entity
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
+
+import src.controller.enfermera as enfermera_controller
 from database.connection import get_db
+from src.schemas.enfermera import EnfermeraCreate, EnfermeraResponse
 
 # Creamos el router para los pacientes
 # Define un prefijo para las rutas y etiquetas para la documentación
@@ -13,8 +14,8 @@ router = APIRouter(prefix="/enfermeras", tags=["Enfermeras"])
 # creacion de rutas para las enfermeras
 
 
-@router.post("/enfermeras/", response_model=enfermera_entity, tags=["Enfermeras"])
-def create_enfermera(enfermera: enfermera_entity, db: Session = Depends(get_db)):
+@router.post("/enfermeras/", response_model=EnfermeraResponse, tags=["Enfermeras"])
+def create_enfermera(enfermera: EnfermeraCreate, db: Session = Depends(get_db)):
     db_enfermera = enfermera_controller.get_enfermera(
         db, enfermera_id=enfermera.idEnfermera
     )
@@ -38,7 +39,7 @@ def create_enfermera(enfermera: enfermera_entity, db: Session = Depends(get_db))
         )
 
 
-@router.get("/enfermeras/", response_model=list[enfermera_entity], tags=["Enfermeras"])
+@router.get("/enfermeras/", response_model=list[EnfermeraResponse], tags=["Enfermeras"])
 def read_all_enfermeras(db: Session = Depends(get_db)):
     dbGetEnfermeras = enfermera_controller.get_enfermeras(db)
     if not dbGetEnfermeras:
@@ -47,7 +48,7 @@ def read_all_enfermeras(db: Session = Depends(get_db)):
 
 
 @router.get(
-    "/enfermeras/{enfermera_id}", response_model=enfermera_entity, tags=["Enfermeras"]
+    "/enfermeras/{enfermera_id}", response_model=EnfermeraResponse, tags=["Enfermeras"]
 )
 def read_one_enfermera(enfermera_id: int, db: Session = Depends(get_db)):
     db_enfermera = enfermera_controller.get_enfermera(db, enfermera_id=enfermera_id)
@@ -70,7 +71,7 @@ def read_one_enfermera(enfermera_id: int, db: Session = Depends(get_db)):
 
 @router.get(
     "/enfermeras/area/{area}",
-    response_model=list[enfermera_entity],
+    response_model=list[EnfermeraResponse],
     tags=["Enfermeras"],
 )
 def read_enfermeras_por_area(area: str, db: Session = Depends(get_db)):
@@ -83,7 +84,7 @@ def read_enfermeras_por_area(area: str, db: Session = Depends(get_db)):
 
 
 @router.delete(
-    "/enfermeras/{enfermera_id}", response_model=enfermera_entity, tags=["Enfermeras"]
+    "/enfermeras/{enfermera_id}", response_model=EnfermeraResponse, tags=["Enfermeras"]
 )
 def delete_enfermera(enfermera_id: int, db: Session = Depends(get_db)):
     db_enfermera = enfermera_controller.delete_enfermera(db, enfermera_id=enfermera_id)
@@ -105,10 +106,10 @@ def delete_enfermera(enfermera_id: int, db: Session = Depends(get_db)):
 
 
 @router.put(
-    "/enfermeras/{enfermera_id}", response_model=enfermera_entity, tags=["Enfermeras"]
+    "/enfermeras/{enfermera_id}", response_model=EnfermeraResponse, tags=["Enfermeras"]
 )
 def update_enfermera(
-    enfermera_id: int, enfermera: enfermera_entity, db: Session = Depends(get_db)
+    enfermera_id: int, enfermera: EnfermeraCreate, db: Session = Depends(get_db)
 ):
     db_enfermera = enfermera_controller.update_enfermera(
         db, enfermera_id=enfermera_id, enfermera=enfermera

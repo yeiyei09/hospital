@@ -1,22 +1,21 @@
-import controller.cita as cita_controller
-import controller.paciente as paciente_controller
-import controller.medico as medicos_controller
-from entities.cita import Cita as cita_entity
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
+
+import src.controller.cita as cita_controller
+import src.controller.medico as medicos_controller
+import src.controller.paciente as paciente_controller
 from database.connection import get_db
+from src.schemas.cita import CitaCreate, CitaResponse
 
 router = APIRouter(prefix="/citas", tags=["Citas"])
 
 # Aqui empiezan las rutas para las citas
 
 
-@router.post("/citas/", response_model=cita_entity tags=["Citas"])
-def create_cita(
-    cita: cita_entity, db: Session = Depends(get_db)
-) -> JSONResponse:
-    paciente = paciente_controller.get_paciente(db, paciente_id=cita.idPaciente)   
+@router.post("/citas/", response_model=CitaResponse, tags=["Citas"])
+def create_cita(cita: CitaCreate, db: Session = Depends(get_db)) -> JSONResponse:
+    paciente = paciente_controller.get_paciente(db, paciente_id=cita.idPaciente)
     medico = medicos_controller.get_medico(db, medico_id=cita.idMedico)
     if not paciente and not medico:
         raise HTTPException(
@@ -46,10 +45,9 @@ def create_cita(
                 },
             },
         )
-    
 
 
-@router.get("/citas/", response_model=list[cita_entity], tags=["Citas"])
+@router.get("/citas/", response_model=list[CitaResponse], tags=["Citas"])
 def read_all_citas(db: Session = Depends(get_db)):
     dbGetCitas = cita_controller.get_agendar_citas(db)
     if not dbGetCitas:
@@ -57,7 +55,7 @@ def read_all_citas(db: Session = Depends(get_db)):
     return dbGetCitas
 
 
-@router.get("/citas/{cita_id}", response_model=cita_entity, tags=["Citas"])
+@router.get("/citas/{cita_id}", response_model=CitaResponse, tags=["Citas"])
 def read_one_cita(cita_id: int, db: Session = Depends(get_db)):
     db_cita = cita_controller.get_agendar_cita(db, cita_id=cita_id)
     if db_cita is None:
@@ -79,10 +77,8 @@ def read_one_cita(cita_id: int, db: Session = Depends(get_db)):
         )
 
 
-@router.put("/citas/{cita_id}", response_model=cita_entity, tags=["Citas"])
-def update_cita(
-    cita_id: int, cita: cita_entity, db: Session = Depends(get_db)
-):
+@router.put("/citas/{cita_id}", response_model=CitaResponse, tags=["Citas"])
+def update_cita(cita_id: int, cita: CitaCreate, db: Session = Depends(get_db)):
     db_cita = cita_controller.update_agendar_cita(db, cita_id=cita_id, cita=cita)
     if db_cita is None:
         raise HTTPException(status_code=404, detail="Cita no encontrada")
@@ -103,9 +99,9 @@ def update_cita(
         )
 
 
-@router.delete("/citas/{cita_id}", response_model=cita_entity, tags=["Citas"])
+@router.delete("/citas/{cita_id}", response_model=CitaResponse, tags=["Citas"])
 def delete_cita(cita_id: int, db: Session = Depends(get_db)):
-    db_cita = cita_controller.delete_agendar_cita(db, cita_id=cita_id) 
+    db_cita = cita_controller.delete_agendar_cita(db, cita_id=cita_id)
     if db_cita is None:
         raise HTTPException(status_code=404, detail="Cita no encontrada")
     else:
