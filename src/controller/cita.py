@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from entities.cita import Cita as cita
+from src.entities.cita import Cita as cita
 
 
 def create_agendar_cita(db: Session, cita: cita):

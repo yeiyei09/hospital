@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-import controller.factura as factura_controller
-import controller.paciente as paciente_controller
-import controller.cita as cita_controller
-from entities.factura import Factura as factura_entity
 
+import src.controller.cita as cita_controller
+import src.controller.factura as factura_controller
+import src.controller.paciente as paciente_controller
 from database.connection import get_db
+from src.schemas.factura import FacturaCreate, FacturaResponse
 
 """Creamos el router para los pacientes
 
@@ -16,8 +16,8 @@ En todas las rutas usamos router en lugar de app ya que aqui se abre otra instan
 router = APIRouter(prefix="/facturas", tags=["Facturas"])
 
 
-@router.post("/facturas/", response_model=factura_entity, tags=["Facturas"])
-def create_factura(factura: factura_entity, db: Session = Depends(get_db)):
+@router.post("/facturas/", response_model=FacturaResponse, tags=["Facturas"])
+def create_factura(factura: FacturaCreate, db: Session = Depends(get_db)):
     paciente = paciente_controller.get_paciente(db, paciente_id=factura.idPaciente)
     cita = cita_controller.get_agendar_cita(db, cita_id=factura.idCita)
     if not paciente and not cita:
@@ -51,7 +51,7 @@ def create_factura(factura: factura_entity, db: Session = Depends(get_db)):
         )
 
 
-@router.get("/facturas/", response_model=list[factura_entity], tags=["Facturas"])
+@router.get("/facturas/", response_model=list[FacturaResponse], tags=["Facturas"])
 def read_all_facturas(db: Session = Depends(get_db)):
     dbGetFacturas = factura_controller.get_facturas(db)
     if not dbGetFacturas:
@@ -59,7 +59,7 @@ def read_all_facturas(db: Session = Depends(get_db)):
     return dbGetFacturas
 
 
-@router.get("/facturas/{factura_id}", response_model=factura_entity, tags=["Facturas"])
+@router.get("/facturas/{factura_id}", response_model=FacturaResponse, tags=["Facturas"])
 def read_one_factura(factura_id: int, db: Session = Depends(get_db)):
     db_factura = factura_controller.get_factura(db, factura_id=factura_id)
     if db_factura is None:
@@ -82,7 +82,7 @@ def read_one_factura(factura_id: int, db: Session = Depends(get_db)):
 
 
 @router.delete(
-    "/facturas/{factura_id}", response_model=factura_entity, tags=["Facturas"]
+    "/facturas/{factura_id}", response_model=FacturaResponse, tags=["Facturas"]
 )
 def delete_factura(factura_id: int, db: Session = Depends(get_db)):
     db_factura = factura_controller.delete_factura(db, factura_id=factura_id)
