@@ -1,26 +1,22 @@
-import controller.cita as cita
-import controller.diagnostico as diagnostico
-import controller.enfermera as enfermera
-import controller.paciente as paciente
-import controller.medico as medico
-import controller.factura as factura
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from database import SessionLocal, get_db
+import src.controller.cita as cita_controller
+import src.controller.medico as medicos_controller
+import src.controller.paciente as paciente_controller
+from database.connection import get_db
+from src.schemas.cita import CitaCreate, CitaResponse
 
 router = APIRouter(prefix="/citas", tags=["Citas"])
 
 # Aqui empiezan las rutas para las citas
 
 
-@router.post("/citas/", response_model=cita.create_agendar_cita tags=["Citas"])
-def create_cita(
-    cita: cita.AgendarCitaCreate, db: Session = Depends(get_db)
-) -> JSONResponse:
-    paciente = crud.get_paciente(db, paciente_id=cita.idPaciente)
-    medico = crud.get_medico(db, medico_id=cita.idMedico)
+@router.post("/citas/", response_model=CitaResponse, tags=["Citas"])
+def create_cita(cita: CitaCreate, db: Session = Depends(get_db)) -> JSONResponse:
+    paciente = paciente_controller.get_paciente(db, paciente_id=cita.idPaciente)
+    medico = medicos_controller.get_medico(db, medico_id=cita.idMedico)
     if not paciente and not medico:
         raise HTTPException(
             status_code=400,
@@ -31,7 +27,7 @@ def create_cita(
             status_code=400,
             detail="Médico o paciente no existe, intenta con un médico o paciente que ya este registrado",
         )
-    cita_creada = crud.create_agendar_cita(db=db, cita=cita)
+    cita_creada = cita_controller.create_agendar_cita(db=db, cita=cita)
     if cita_creada is None:  # validacion
         raise HTTPException(status_code=400, detail="Error al crear la cita")
     else:
@@ -40,29 +36,28 @@ def create_cita(
             content={
                 "detail": "Cita creada cerractamente",
                 "Cuerpo de la respuesta": {
-                    "ID de la Cita": cita_creada.idCita,
-                    "Cedula del Paciente": cita_creada.idPaciente,
-                    "Cedula del Medico": cita_creada.idMedico,
-                    "Fecha de Agendamiento": str(cita_creada.fechaAgendamiento),
-                    "Fecha de Emision": str(cita_creada.fechaEmision),
-                    "Motivo de Consulta": cita_creada.motivoConsulta,
+                    "ID de la Cita": cita.idCita,
+                    "Cedula del Paciente": cita.idPaciente,
+                    "Cedula del Medico": cita.idMedico,
+                    "Fecha de Agendamiento": str(cita.fechaAgendamiento),
+                    "Fecha de Emision": str(cita.fechaEmision),
+                    "Motivo de Consulta": cita.motivoConsulta,
                 },
             },
         )
-    
 
 
-@router.get("/citas/", response_model=list[schemas.AgendarCita], tags=["Citas"])
+@router.get("/citas/", response_model=list[CitaResponse], tags=["Citas"])
 def read_all_citas(db: Session = Depends(get_db)):
-    dbGetCitas = crud.get_agendar_citas(db)
+    dbGetCitas = cita_controller.get_agendar_citas(db)
     if not dbGetCitas:
         raise HTTPException(status_code=404, detail="No hay citas registradas")
     return dbGetCitas
 
 
-@router.get("/citas/{cita_id}", response_model=schemas.AgendarCita, tags=["Citas"])
+@router.get("/citas/{cita_id}", response_model=CitaResponse, tags=["Citas"])
 def read_one_cita(cita_id: int, db: Session = Depends(get_db)):
-    db_cita = crud.get_agendar_cita(db, cita_id=cita_id)
+    db_cita = cita_controller.get_agendar_cita(db, cita_id=cita_id)
     if db_cita is None:
         raise HTTPException(status_code=404, detail="Cita no encontrada")
     else:
@@ -82,11 +77,9 @@ def read_one_cita(cita_id: int, db: Session = Depends(get_db)):
         )
 
 
-@router.put("/citas/{cita_id}", response_model=schemas.AgendarCita, tags=["Citas"])
-def update_cita(
-    cita_id: int, cita: schemas.AgendarCitaCreate, db: Session = Depends(get_db)
-):
-    db_cita = crud.update_agendar_cita(db, cita_id=cita_id, cita=cita)
+@router.put("/citas/{cita_id}", response_model=CitaResponse, tags=["Citas"])
+def update_cita(cita_id: int, cita: CitaCreate, db: Session = Depends(get_db)):
+    db_cita = cita_controller.update_agendar_cita(db, cita_id=cita_id, cita=cita)
     if db_cita is None:
         raise HTTPException(status_code=404, detail="Cita no encontrada")
     else:
@@ -95,20 +88,20 @@ def update_cita(
             content={
                 "detail": "Cita actualizada correctamente",
                 "data": {
-                    "ID de la Cita": db_cita.idCita,
-                    "Cedula del Paciente": db_cita.idPaciente,
-                    "Cedula del Medico": db_cita.idMedico,
-                    "Fecha de Agendamiento": str(db_cita.fechaAgendamiento),
-                    "Fecha de Emision": str(db_cita.fechaEmision),
-                    "Motivo de Consulta": db_cita.motivoConsulta,
+                    "ID de la Cita": cita.idCita,
+                    "Cedula del Paciente": cita.idPaciente,
+                    "Cedula del Medico": cita.idMedico,
+                    "Fecha de Agendamiento": str(cita.fechaAgendamiento),
+                    "Fecha de Emision": str(cita.fechaEmision),
+                    "Motivo de Consulta": cita.motivoConsulta,
                 },
             },
         )
 
 
-@router.delete("/citas/{cita_id}", response_model=schemas.AgendarCita, tags=["Citas"])
+@router.delete("/citas/{cita_id}", response_model=CitaResponse, tags=["Citas"])
 def delete_cita(cita_id: int, db: Session = Depends(get_db)):
-    db_cita = crud.delete_agendar_cita(db, cita_id=cita_id)
+    db_cita = cita_controller.delete_agendar_cita(db, cita_id=cita_id)
     if db_cita is None:
         raise HTTPException(status_code=404, detail="Cita no encontrada")
     else:

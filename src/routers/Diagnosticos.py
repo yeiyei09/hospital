@@ -1,8 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-from database import SessionLocal, get_db
-import crud, schemas
+
+import src.controller.cita as cita_controller
+import src.controller.diagnostico as diagnostico_controller
+import src.controller.enfermera as enfermera_controller
+import src.controller.medico as medicos_controller
+import src.controller.paciente as paciente_controller
+from database.connection import get_db
+from src.schemas.diagnostico import DiagnosticoCreate, DiagnosticoResponse
 
 # Creamos el router para los pacientes
 # Define un prefijo para las rutas y etiquetas para la documentación
@@ -13,15 +19,15 @@ router = APIRouter(prefix="/diagnosticos", tags=["Diagnosticos"])
 
 
 @router.post(
-    "/diagnosticos/", response_model=schemas.Diagnostico, tags=["Diagnósticos"]
+    "/diagnosticos/", response_model=DiagnosticoResponse, tags=["Diagnósticos"]
 )
-def create_diagnostico(
-    diagnostico: schemas.DiagnosticoCreate, db: Session = Depends(get_db)
-):
-    paciente = crud.get_paciente(db, paciente_id=diagnostico.idPaciente)
-    medico = crud.get_medico(db, medico_id=diagnostico.idMedico)
-    enfermera = crud.get_enfermera(db, enfermera_id=diagnostico.idEnfermera)
-    cita = crud.get_agendar_cita(db, cita_id=diagnostico.idCita)
+def create_diagnostico(diagnostico: DiagnosticoCreate, db: Session = Depends(get_db)):
+    paciente = paciente_controller.get_paciente(db, paciente_id=diagnostico.idPaciente)
+    medico = medicos_controller.get_medico(db, medico_id=diagnostico.idMedico)
+    enfermera = enfermera_controller.get_enfermera(
+        db, enfermera_id=diagnostico.idEnfermera
+    )
+    cita = cita_controller.get_agendar_cita(db, cita_id=diagnostico.idCita)
     if not paciente and not medico and not enfermera and not cita:
         raise HTTPException(
             status_code=400,
@@ -32,7 +38,9 @@ def create_diagnostico(
             status_code=400,
             detail="Médico, paciente, enfermera o cita no existe, intenta con un médico, paciente, enfermera o cita que ya este registrado",
         )
-    diagnostico_creado = crud.create_diagnostico(db=db, diagnostico=diagnostico)
+    diagnostico_creado = diagnostico_controller.create_diagnostico(
+        db=db, diagnostico=diagnostico
+    )
     if diagnostico_creado is None:  # validacion
         raise HTTPException(status_code=400, detail="Error al crear el diagnóstico")
     else:
@@ -41,23 +49,23 @@ def create_diagnostico(
             content={
                 "detail": "Diagnóstico creado cerractamente",
                 "Cuerpo de la respuesta": {
-                    "ID del Diagnóstico": diagnostico_creado.idDiagnostico,
-                    "ID de la Cita": diagnostico_creado.idCita,
-                    "Cedula del Medico": diagnostico_creado.idMedico,
-                    "Cedula del Paciente": diagnostico_creado.idPaciente,
-                    "Cedula de la Enfermera": diagnostico_creado.idEnfermera,
-                    "Fecha de Diagnóstico": str(diagnostico_creado.fechaDiagnostico),
-                    "Descripción del Diagnóstico": diagnostico_creado.descripcionDiagnostico,
+                    "ID del Diagnóstico": diagnostico.idDiagnostico,
+                    "ID de la Cita": diagnostico.idCita,
+                    "Cedula del Medico": diagnostico.idMedico,
+                    "Cedula del Paciente": diagnostico.idPaciente,
+                    "Cedula de la Enfermera": diagnostico.idEnfermera,
+                    "Fecha de Diagnóstico": str(diagnostico.fechaDiagnostico),
+                    "Descripción del Diagnóstico": diagnostico.descripcionDiagnostico,
                 },
             },
         )
 
 
 @router.get(
-    "/diagnosticos/", response_model=list[schemas.Diagnostico], tags=["Diagnósticos"]
+    "/diagnosticos/", response_model=list[DiagnosticoResponse], tags=["Diagnósticos"]
 )
 def read_all_diagnosticos(db: Session = Depends(get_db)):
-    dbGetDiagnosticos = crud.get_diagnosticos(db)
+    dbGetDiagnosticos = diagnostico_controller.get_diagnosticos(db)
     if not dbGetDiagnosticos:
         raise HTTPException(status_code=404, detail="No hay diagnósticos registrados")
     return dbGetDiagnosticos
@@ -65,11 +73,13 @@ def read_all_diagnosticos(db: Session = Depends(get_db)):
 
 @router.get(
     "/diagnosticos/{diagnostico_id}",
-    response_model=schemas.Diagnostico,
+    response_model=DiagnosticoResponse,
     tags=["Diagnósticos"],
 )
 def read_one_diagnostico(diagnostico_id: int, db: Session = Depends(get_db)):
-    db_diagnostico = crud.get_diagnostico(db, diagnostico_id=diagnostico_id)
+    db_diagnostico = diagnostico_controller.get_diagnostico(
+        db, diagnostico_id=diagnostico_id
+    )
     if db_diagnostico is None:
         raise HTTPException(status_code=404, detail="Diagnóstico no encontrado")
     else:
@@ -92,11 +102,13 @@ def read_one_diagnostico(diagnostico_id: int, db: Session = Depends(get_db)):
 
 @router.delete(
     "/diagnosticos/{diagnostico_id}",
-    response_model=schemas.Diagnostico,
+    response_model=DiagnosticoResponse,
     tags=["Diagnósticos"],
 )
 def delete_diagnostico(diagnostico_id: int, db: Session = Depends(get_db)):
-    db_diagnostico = crud.delete_diagnostico(db, diagnostico_id=diagnostico_id)
+    db_diagnostico = diagnostico_controller.delete_diagnostico(
+        db, diagnostico_id=diagnostico_id
+    )
     if db_diagnostico is None:
         raise HTTPException(status_code=404, detail="Diagnóstico no encontrado")
     else:
