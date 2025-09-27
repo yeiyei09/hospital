@@ -4,6 +4,8 @@ from sqlalchemy.orm import Session
 
 import src.controller.paciente as paciente_controller
 from database.connection import get_db
+from src.auth.middleware import get_current_active_user
+from src.schemas.auth import UserResponse
 from src.schemas.paciente import PacienteCreate, PacienteResponse
 
 """Creamos el router para los pacientes
@@ -14,7 +16,11 @@ router = APIRouter(prefix="/pacientes", tags=["Pacientes"])
 
 
 @router.post("/pacientes/", response_model=PacienteResponse, tags=["Pacientes"])
-def create_paciente(paciente: PacienteCreate, db: Session = Depends(get_db)):
+def create_paciente(
+    paciente: PacienteCreate,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
+):
     """Busca en la base de datos si ya existe un paciente con la misma cédula (idPaciente)"""
 
     db_paciente = paciente_controller.get_paciente(db, paciente_id=paciente.idPaciente)
@@ -41,7 +47,10 @@ def create_paciente(paciente: PacienteCreate, db: Session = Depends(get_db)):
 
 
 @router.get("/pacientes/", response_model=list[PacienteResponse], tags=["Pacientes"])
-def read_all_pacientes(db: Session = Depends(get_db)):
+def read_all_pacientes(
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
+):
     pacientes_db = paciente_controller.get_pacientes(db)
     if not pacientes_db:
         raise HTTPException(status_code=404, detail="No hay pacientes registrados")

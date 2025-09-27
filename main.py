@@ -6,11 +6,26 @@ para el sistema de gestión médica, incluyendo la configuración de CORS,
 registro de routers y la función principal de ejecución.
 """
 
+import logging
+
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.routers import Citas, Diagnosticos, Enfermeras, Facturas, Medicos, pacientes
+from src.migrations import print_migration_status, run_migrations
+from src.routers import (
+    Citas,
+    Diagnosticos,
+    Enfermeras,
+    Facturas,
+    Medicos,
+    auth,
+    pacientes,
+)
+
+# Configurar logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="Sistema de Gestión Médica",
@@ -40,6 +55,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Incluir router de autenticación (sin protección)
+app.include_router(auth.router)
+
+# Incluir routers médicos (con protección JWT)
 app.include_router(pacientes.router)
 app.include_router(Medicos.router)
 app.include_router(Enfermeras.router)
@@ -52,6 +71,38 @@ origins = [
     "http://localhost:3000",
     "https://mi-frontend.com",
 ]
+
+
+@app.on_event("startup")
+async def startup_event():
+    """
+    Evento de inicio que ejecuta la migración automática de la base de datos.
+    """
+    logger.info("Iniciando Sistema de Gestión Médica...")
+
+    try:
+        logger.info("Ejecutando migración automática...")
+        migration_success = run_migrations()
+
+        if migration_success:
+            logger.info("Migración completada exitosamente")
+            print_migration_status()
+        else:
+            logger.error(
+                "Error en la migración - la aplicación puede no funcionar correctamente"
+            )
+
+    except Exception as e:
+        logger.error(f"Error crítico durante el inicio: {e}")
+        raise
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """
+    Evento de cierre de la aplicación.
+    """
+    logger.info("🛑 Cerrando Sistema de Gestión Médica...")
 
 
 def main():
