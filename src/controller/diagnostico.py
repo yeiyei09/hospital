@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
-from entities.diagnostico import Diagnostico as diagnostico
+
+from src.entities.diagnostico import Diagnostico as diagnostico
 
 
 def create_diagnostico(db: Session, diagnostico: diagnostico):

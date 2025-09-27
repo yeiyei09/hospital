@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from entities.medico import Medico as medico
+from src.entities.medico import Medico as medico
 
 """ A partir de aqui hacemos metodos para los medicos"""
 

@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
 
-from entities.factura import Factura as factura
-
+from src.entities.factura import Factura as factura
 
 """A partir de aqui hacemos metodos para las facturas"""
 

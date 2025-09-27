@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
-from entities.enfermera import Enfermera as enfermera
+
+from src.entities.enfermera import Enfermera as enfermera
 
 
 def create_enfermera(db: Session, enfermera: enfermera):
