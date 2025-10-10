@@ -15,7 +15,7 @@ En todas las rutas usamos router en lugar de app ya que aqui se abre otra instan
 router = APIRouter(prefix="/pacientes", tags=["Pacientes"])
 
 
-@router.post("/pacientes/", response_model=PacienteResponse, tags=["Pacientes"])
+@router.post("/", response_model=PacienteResponse, tags=["Pacientes"])
 def create_paciente(
     paciente: PacienteCreate,
     db: Session = Depends(get_db),
@@ -46,7 +46,7 @@ def create_paciente(
         )
 
 
-@router.get("/pacientes/", response_model=list[PacienteResponse], tags=["Pacientes"])
+@router.get("/", response_model=list[PacienteResponse], tags=["Pacientes"])
 def read_all_pacientes(
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_active_user),
@@ -71,10 +71,12 @@ def read_all_pacientes(
 """
 
 
-@router.get(
-    "/pacientes/{paciente_id}", response_model=PacienteResponse, tags=["Pacientes"]
-)
-def read_one_paciente(paciente_id: str, db: Session = Depends(get_db)):
+@router.get("/{paciente_id}", response_model=PacienteResponse, tags=["Pacientes"])
+def read_one_paciente(
+    paciente_id: str,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
+):
     db_paciente = paciente_controller.get_paciente(db, paciente_id=paciente_id)
     if db_paciente is None:
         raise HTTPException(status_code=404, detail="Paciente no encontrado")
@@ -92,10 +94,12 @@ def read_one_paciente(paciente_id: str, db: Session = Depends(get_db)):
         )
 
 
-@router.delete(
-    "/pacientes/{paciente_id}", response_model=PacienteResponse, tags=["Pacientes"]
-)
-def delete_paciente(paciente_id: str, db: Session = Depends(get_db)):
+@router.delete("/{paciente_id}", response_model=PacienteResponse, tags=["Pacientes"])
+def delete_paciente(
+    paciente_id: str,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
+):
     db_paciente = paciente_controller.delete_paciente(db, paciente_id=paciente_id)
     if db_paciente is None:
         raise HTTPException(status_code=404, detail="Paciente no encontrado")
@@ -113,11 +117,12 @@ def delete_paciente(paciente_id: str, db: Session = Depends(get_db)):
         )
 
 
-@router.put(
-    "/pacientes/{paciente_id}", response_model=PacienteResponse, tags=["Pacientes"]
-)
+@router.put("/{paciente_id}", response_model=PacienteResponse, tags=["Pacientes"])
 def update_paciente(
-    paciente_id: str, paciente: PacienteCreate, db: Session = Depends(get_db)
+    paciente_id: str,
+    paciente: PacienteCreate,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
 ):
     db_paciente = paciente_controller.update_paciente(
         db, paciente_id=paciente_id, paciente=paciente

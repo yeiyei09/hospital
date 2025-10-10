@@ -17,6 +17,7 @@ class MedicoBase(BaseModel):
     correoMedico: EmailStr
     telefonoMedico: Optional[str] = None
     especialidad: Optional[str] = None
+    # ESTO QUE HACE AQUI?
     numeroColegiatura: Optional[str] = None
 
 
