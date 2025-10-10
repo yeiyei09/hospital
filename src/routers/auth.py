@@ -69,10 +69,8 @@ def login_user(login_data: LoginRequest, db: Session = Depends(get_db)):
         HTTPException: Si las credenciales son inválidas
     """
     try:
-        #fix: intentamos autenticar al usuario de forma segura
         user = authenticate_user(db, login_data.username, login_data.password)
         
-        #fix: validación si el usuario no existe o credenciales incorrectas
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -80,7 +78,6 @@ def login_user(login_data: LoginRequest, db: Session = Depends(get_db)):
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        #fix: generamos el token de acceso JWT
         access_token = create_access_token(
             data={"sub": user.username, "user_id": str(user.id_usuario), "rol": user.rol}
         )
@@ -97,11 +94,9 @@ def login_user(login_data: LoginRequest, db: Session = Depends(get_db)):
         }
 
     except HTTPException:
-        #fix: si ya lanzamos un HTTPException antes, la volvemos a lanzar
         raise
 
     except Exception as e:
-        #fix: captura de cualquier error inesperado (como bcrypt o base de datos)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error interno del servidor: {str(e)}",
