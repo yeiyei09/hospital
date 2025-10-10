@@ -70,7 +70,6 @@ def login_user(login_data: LoginRequest, db: Session = Depends(get_db)):
     """
     try:
         user = authenticate_user(db, login_data.username, login_data.password)
-        
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -82,40 +81,32 @@ def login_user(login_data: LoginRequest, db: Session = Depends(get_db)):
             data={"sub": user.username, "user_id": str(user.id_usuario), "rol": user.rol}
         )
 
-        return {
-            "access_token": access_token,
-            "token_type": "bearer",
-            "user": {
-                "id": str(user.id_usuario),
-                "username": user.username,
-                "rol": user.rol,
-                "email": user.email,
-            },
-        }
+        
+        return LoginResponse(
+            access_token=access_token,
+            token_type="bearer",
+            user=UserResponse(
+                id_usuario=str(
+                    getattr(user, "id_usuario", None) or getattr(user, "id", None)
+                ),
+                username=getattr(user, "username", None),
+                email=getattr(user, "email", None),
+                nombre_completo=getattr(user, "nombre_completo", None),
+                rol=getattr(user, "rol", None),
+                echa_creacion=getattr(user, "fecha_creacion", None),
+                fecha_actualizacion=getattr(user, "fecha_actualizacion", None),
+                activo=getattr(user, "activo", None),
+            ),
+        )
 
     except HTTPException:
         raise
-
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error interno del servidor: {str(e)}",
         )
 
-    return LoginResponse(
-        access_token=access_token,
-        token_type="bearer",
-        user=UserResponse(
-            id_usuario=user.id_usuario,
-            username=user.username,
-            email=user.email,
-            nombre_completo=user.nombre_completo,
-            rol=user.rol,
-            fecha_creacion=user.fecha_creacion,
-            fecha_actualizacion=user.fecha_actualizacion,
-            activo=user.activo,
-        ),
-    )
 
 
 @router.get("/me", response_model=UserResponse, tags=["Autenticación"])
