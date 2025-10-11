@@ -6,6 +6,8 @@ import src.controller.cita as cita_controller
 import src.controller.factura as factura_controller
 import src.controller.paciente as paciente_controller
 from database.connection import get_db
+from src.auth.middleware import get_current_active_user
+from src.schemas.auth import UserResponse
 from src.schemas.factura import FacturaCreate, FacturaResponse
 
 """Creamos el router para los pacientes
@@ -16,8 +18,12 @@ En todas las rutas usamos router en lugar de app ya que aqui se abre otra instan
 router = APIRouter(prefix="/facturas", tags=["Facturas"])
 
 
-@router.post("/facturas/", response_model=FacturaResponse, tags=["Facturas"])
-def create_factura(factura: FacturaCreate, db: Session = Depends(get_db)):
+@router.post("/", response_model=FacturaResponse, tags=["Facturas"])
+def create_factura(
+    factura: FacturaCreate,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
+):
     paciente = paciente_controller.get_paciente(db, paciente_id=factura.idPaciente)
     cita = cita_controller.get_agendar_cita(db, cita_id=factura.idCita)
     if not paciente and not cita:
@@ -51,16 +57,23 @@ def create_factura(factura: FacturaCreate, db: Session = Depends(get_db)):
         )
 
 
-@router.get("/facturas/", response_model=list[FacturaResponse], tags=["Facturas"])
-def read_all_facturas(db: Session = Depends(get_db)):
+@router.get("/", response_model=list[FacturaResponse], tags=["Facturas"])
+def read_all_facturas(
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
+):
     dbGetFacturas = factura_controller.get_facturas(db)
     if not dbGetFacturas:
         raise HTTPException(status_code=404, detail="No hay facturas registradas")
     return dbGetFacturas
 
 
-@router.get("/facturas/{factura_id}", response_model=FacturaResponse, tags=["Facturas"])
-def read_one_factura(factura_id: int, db: Session = Depends(get_db)):
+@router.get("/{factura_id}", response_model=FacturaResponse, tags=["Facturas"])
+def read_one_factura(
+    factura_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
+):
     db_factura = factura_controller.get_factura(db, factura_id=factura_id)
     if db_factura is None:
         raise HTTPException(status_code=404, detail="Factura no encontrada")
@@ -81,10 +94,12 @@ def read_one_factura(factura_id: int, db: Session = Depends(get_db)):
         )
 
 
-@router.delete(
-    "/facturas/{factura_id}", response_model=FacturaResponse, tags=["Facturas"]
-)
-def delete_factura(factura_id: int, db: Session = Depends(get_db)):
+@router.delete("/{factura_id}", response_model=FacturaResponse, tags=["Facturas"])
+def delete_factura(
+    factura_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
+):
     db_factura = factura_controller.delete_factura(db, factura_id=factura_id)
     if db_factura is None:
         raise HTTPException(status_code=404, detail="Factura no encontrada")

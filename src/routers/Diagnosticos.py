@@ -8,6 +8,8 @@ import src.controller.enfermera as enfermera_controller
 import src.controller.medico as medicos_controller
 import src.controller.paciente as paciente_controller
 from database.connection import get_db
+from src.auth.middleware import get_current_active_user
+from src.schemas.auth import UserResponse
 from src.schemas.diagnostico import DiagnosticoCreate, DiagnosticoResponse
 
 # Creamos el router para los pacientes
@@ -18,10 +20,12 @@ router = APIRouter(prefix="/diagnosticos", tags=["Diagnosticos"])
 # Aqui empiezan las rutas para los diagnosticos
 
 
-@router.post(
-    "/diagnosticos/", response_model=DiagnosticoResponse, tags=["Diagnósticos"]
-)
-def create_diagnostico(diagnostico: DiagnosticoCreate, db: Session = Depends(get_db)):
+@router.post("/", response_model=DiagnosticoResponse, tags=["Diagnósticos"])
+def create_diagnostico(
+    diagnostico: DiagnosticoCreate,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
+):
     paciente = paciente_controller.get_paciente(db, paciente_id=diagnostico.idPaciente)
     medico = medicos_controller.get_medico(db, medico_id=diagnostico.idMedico)
     enfermera = enfermera_controller.get_enfermera(
@@ -61,10 +65,11 @@ def create_diagnostico(diagnostico: DiagnosticoCreate, db: Session = Depends(get
         )
 
 
-@router.get(
-    "/diagnosticos/", response_model=list[DiagnosticoResponse], tags=["Diagnósticos"]
-)
-def read_all_diagnosticos(db: Session = Depends(get_db)):
+@router.get("/", response_model=list[DiagnosticoResponse], tags=["Diagnósticos"])
+def read_all_diagnosticos(
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
+):
     dbGetDiagnosticos = diagnostico_controller.get_diagnosticos(db)
     if not dbGetDiagnosticos:
         raise HTTPException(status_code=404, detail="No hay diagnósticos registrados")
@@ -72,11 +77,15 @@ def read_all_diagnosticos(db: Session = Depends(get_db)):
 
 
 @router.get(
-    "/diagnosticos/{diagnostico_id}",
+    "/{diagnostico_id}",
     response_model=DiagnosticoResponse,
     tags=["Diagnósticos"],
 )
-def read_one_diagnostico(diagnostico_id: int, db: Session = Depends(get_db)):
+def read_one_diagnostico(
+    diagnostico_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
+):
     db_diagnostico = diagnostico_controller.get_diagnostico(
         db, diagnostico_id=diagnostico_id
     )
@@ -101,11 +110,15 @@ def read_one_diagnostico(diagnostico_id: int, db: Session = Depends(get_db)):
 
 
 @router.delete(
-    "/diagnosticos/{diagnostico_id}",
+    "/{diagnostico_id}",
     response_model=DiagnosticoResponse,
     tags=["Diagnósticos"],
 )
-def delete_diagnostico(diagnostico_id: int, db: Session = Depends(get_db)):
+def delete_diagnostico(
+    diagnostico_id: int,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
+):
     db_diagnostico = diagnostico_controller.delete_diagnostico(
         db, diagnostico_id=diagnostico_id
     )
