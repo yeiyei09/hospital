@@ -11,6 +11,7 @@ import logging
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.openapi.utils import get_openapi
 
 from src.migrations import print_migration_status, run_migrations
 from src.routers import (
@@ -104,7 +105,29 @@ async def shutdown_event():
     """
     logger.info("🛑 Cerrando Sistema de Gestión Médica...")
 
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    openapi_schema = get_openapi(
+        title="API Hospital",
+        version="1.0.0",
+        description="Sistema hospitalario con autenticación JWT",
+        routes=app.routes,
+    )
+    openapi_schema["components"]["securitySchemes"] = {
+        "BearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+        }
+    }
+    for path in openapi_schema["paths"].values():
+        for method in path.values():
+            method["security"] = [{"BearerAuth": []}]
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
 
+app.openapi = custom_openapi
 def main():
     """
     Función principal para ejecutar el servidor FastAPI.

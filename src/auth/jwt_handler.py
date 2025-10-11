@@ -1,19 +1,30 @@
 """
 JWT authentication utilities.
+
+Módulo de utilidades para autenticación JWT.
+
+Proporciona funciones para generar, verificar y manejar tokens de acceso
+utilizados en el sistema de gestión médica. Implementa cifrado con HMAC-SHA256
+y control de expiración de sesiones
 """
 
 import os
 from datetime import datetime, timedelta
 from typing import Optional
 
-import jwt
+from jose import jwt, JWTError
 from fastapi import HTTPException, status
 from passlib.context import CryptContext
+from dotenv import load_dotenv
+
+load_dotenv()
+print(">>> SECRET_KEY CARGADA DESDE ENV:", os.getenv("SECRET_KEY"))
+
 
 # Configuración de seguridad
-SECRET_KEY = os.getenv(
-    "SECRET_KEY", "tu-clave-secreta-super-segura-cambiar-en-produccion"
-)
+SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY no encontrada. Asegúrate de definirla en el archivo .env")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
@@ -32,8 +43,10 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     Returns:
         bool: True si la contraseña es correcta
     """
-    return pwd_context.verify(plain_password[:72], hashed_password)
-
+    try:
+        return pwd_context.verify(plain_password[:72], hashed_password)
+    except Exception:
+        return False
 
 def get_password_hash(password: str) -> str:
     """
@@ -60,11 +73,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
         str: Token JWT codificado
     """
     to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-
+    expire = datetime.utcnow() + (expires_delta or timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -83,29 +92,20 @@ def verify_token(token: str) -> dict:
     Raises:
         HTTPException: Si el token es inválido o ha expirado
     """
+    print("🔐 Token recibido:", token)
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        print("✅ Token decodificado correctamente:", payload)
         username: str = payload.get("sub")
         user_id: str = payload.get("user_id")
         rol: str = payload.get("rol")
 
         if username is None or user_id is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token inválido",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+            raise JWTError("Datos inválidos en el token")
 
         return {"username": username, "user_id": user_id, "rol": rol}
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token expirado",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    except jwt.JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token inválido",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+    except JWTError as e:
+        print("❌ Error al verificar token:", e)
+        raise HTTPException(status_code=401, detail=f"Token inválido o expirado: {e}")
+    
+    

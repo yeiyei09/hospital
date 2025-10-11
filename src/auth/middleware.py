@@ -2,7 +2,7 @@
 Authentication middleware for protecting endpoints.
 """
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 
@@ -12,12 +12,12 @@ from src.controller.auth_controller import get_user_by_id
 from src.schemas.auth import UserResponse
 
 # OAuth2 scheme para extraer el token del header Authorization
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+#oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
-def get_current_user(
-    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
-) -> UserResponse:
+def get_current_user(request: Request, 
+                     db: Session = Depends(get_db)) -> UserResponse:
+    
     """
     Dependency para obtener el usuario actual desde el token JWT.
 
@@ -31,45 +31,56 @@ def get_current_user(
     Raises:
         HTTPException: Si el token es inválido o el usuario no existe
     """
-    token_data = verify_token(token)
-    user = get_user_by_id(db, token_data["user_id"])
-    if user is None:
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Usuario no encontrado",
+            detail="Token de autenticación no encontrado o inválido",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    if not user.activo:
+    token = auth_header.split(" ")[1]
+
+    try:
+        token_data = verify_token(token)
+        user = get_user_by_id(db, token_data["user_id"])
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Usuario no encontrado",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        if not user.activo:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Usuario inactivo",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        return UserResponse(
+            id_usuario=user.id_usuario,
+            username=user.username,
+            email=user.email,
+            nombre_completo=user.nombre_completo,
+            rol=user.rol,
+            fecha_creacion=user.fecha_creacion,
+            fecha_actualizacion=user.fecha_actualizacion,
+            activo=user.activo,
+        )
+    except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Usuario inactivo",
+            detail=f"Token inválido o expirado: {str(e)}",
             headers={"WWW-Authenticate": "Bearer"},
         )
-
-    return UserResponse(
-        id_usuario=user.id_usuario,
-        username=user.username,
-        email=user.email,
-        nombre_completo=user.nombre_completo,
-        rol=user.rol,
-        fecha_creacion=user.fecha_creacion,
-        fecha_actualizacion=user.fecha_actualizacion,
-        activo=user.activo,
-    )
 
 
 def get_current_active_user(
     current_user: UserResponse = Depends(get_current_user),
-) -> UserResponse:
+):
     """
-    Dependency para obtener el usuario actual activo.
-
-    Args:
-        current_user: Usuario actual
-
-    Returns:
-        UserResponse: Usuario actual activo
+    Verifica que el usuario esté activo.
     """
     if not current_user.activo:
         raise HTTPException(
