@@ -2,11 +2,10 @@
 Authentication router for login and registration.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy.orm import Session
-
 from database.connection import get_db
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from sqlalchemy.orm import Session
 from src.auth.middleware import get_current_user
 from src.controller.auth_controller import (
     authenticate_user,
@@ -53,9 +52,52 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.post("/login", response_model=LoginResponse, tags=["Autenticación"])
-def login_user(login_data: LoginRequest, db: Session = Depends(get_db)):
+def login_user(
+    form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)
+):
     """
     Autentica un usuario y genera un token JWT.
+
+    Args:
+        form_data: Credenciales de login (OAuth2PasswordRequestForm)
+        db: Sesión de base de datos
+
+    Returns:
+        LoginResponse: Token JWT y datos del usuario
+
+    Raises:
+        HTTPException: Si las credenciales son inválidas
+    """
+    user = authenticate_user(db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credenciales incorrectas",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    access_token = create_user_token(user)
+
+    return LoginResponse(
+        access_token=access_token,
+        token_type="bearer",
+        user=UserResponse(
+            id_usuario=user.id_usuario,
+            username=user.username,
+            email=user.email,
+            nombre_completo=user.nombre_completo,
+            rol=user.rol,
+            fecha_creacion=user.fecha_creacion,
+            fecha_actualizacion=user.fecha_actualizacion,
+            activo=user.activo,
+        ),
+    )
+
+
+@router.post("/login-json", response_model=LoginResponse, tags=["Autenticación"])
+def login_user_json(login_data: LoginRequest, db: Session = Depends(get_db)):
+    """
+    Autentica un usuario y genera un token JWT (usando JSON).
 
     Args:
         login_data: Credenciales de login
