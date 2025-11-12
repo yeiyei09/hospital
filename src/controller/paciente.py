@@ -56,8 +56,6 @@ def update_paciente(
     db.refresh(db_paciente)
     return db_paciente
 
-    return db_paciente
-
 
 def delete_paciente(db: Session, paciente_id: UUID):
     """Elimina un paciente por su UUID."""
