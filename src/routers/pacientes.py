@@ -25,19 +25,11 @@ def create_paciente(
     """Crea un nuevo paciente (UUID autogenerado)"""
 
     # Crear paciente sin buscar por id (porque aún no existe)
-    paciente_creado = paciente_controller.create_paciente(db=db, paciente_data=paciente)
-
-    return JSONResponse(
-        status_code=201,
-        content={
-            "detail": "Paciente creado correctamente",
-            "data": {
-                "idPaciente": str(paciente_creado.idPaciente),
-                "nombrePaciente": paciente_creado.nombrePaciente,
-                "correoPaciente": paciente_creado.correoPaciente,
-            },
-        },
+    paciente_creado = paciente_controller.create_paciente(
+        db=db, paciente_data=paciente, user_id=current_user.id_usuario
     )
+
+    return paciente_creado
 
 
 @router.get("/", response_model=list[PacienteResponse], tags=["Pacientes"])
@@ -106,7 +98,10 @@ def update_paciente(
         raise HTTPException(status_code=404, detail="Paciente no encontrado")
 
     paciente_actualizado = paciente_controller.update_paciente(
-        db, paciente_id=paciente_id, paciente_data=paciente
+        db,
+        paciente_id=paciente_id,
+        paciente_data=paciente,
+        user_id=current_user.id_usuario,
     )
 
     return paciente_actualizado

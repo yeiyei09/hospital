@@ -39,3 +39,14 @@ def create_tables():
 def drop_tables():
     """Drop all tables (use with caution)."""
     Base.metadata.drop_all(bind=engine)
+
+
+from src.entities import (
+    paciente,
+    medico,
+    factura,
+    diagnostico,
+    cita,
+    enfermera,
+    usuario,
+)

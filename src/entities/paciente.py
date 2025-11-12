@@ -1,24 +1,28 @@
 import uuid
 
-from sqlalchemy import Column, DateTime, ForeignKey, String
+from sqlalchemy import Column, DateTime, ForeignKey, String, Date
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+from src.entities.audit_mixin import AuditMixin
 
 from database.connection import Base
 
 
-class Paciente(Base):
+class Paciente(AuditMixin, Base):
     """
-    Modelo de paciente
+    Modelo de paciente con campos de auditoría heredados.
     """
 
     __tablename__ = "pacientes"
+
     idPaciente = Column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True
     )
     nombrePaciente = Column(String, index=True)
     correoPaciente = Column(String, index=True)
-
+    telefonoPaciente = Column(String, nullable=True)
+    direccionPaciente = Column(String, nullable=True)
+    fechaNacimiento = Column(Date, nullable=True)
     # Campos de auditoría
     id_usuario_creacion = Column(
         UUID(as_uuid=True), ForeignKey("usuarios.id_usuario"), index=True
