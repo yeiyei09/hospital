@@ -1,18 +1,20 @@
 import uuid
 
-from sqlalchemy import Column, Date, DateTime, ForeignKey, String
+from sqlalchemy import Column, Date, DateTime, ForeignKey, String, Date
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
+from src.entities.audit_mixin import AuditMixin
 
 from database.connection import Base
 
 
-class Cita(Base):
+class Cita(AuditMixin, Base):
     """
     Modelo de cita médica
     """
 
     __tablename__ = "citas"
+
     idCita = Column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, index=True
     )
