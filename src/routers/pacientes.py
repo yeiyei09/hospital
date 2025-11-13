@@ -57,25 +57,27 @@ def read_all_pacientes(
 """
 
 
-@router.get("/{paciente_id}", response_model=PacienteResponse, tags=["Pacientes"])
+@router.get("/{paciente_cedula}", response_model=PacienteResponse, tags=["Pacientes"])
 def read_one_paciente(
-    paciente_id: UUID,
+    paciente_cedula: str,
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_active_user),
 ):
-    db_paciente = paciente_controller.get_paciente(db, paciente_id=paciente_id)
+    db_paciente = paciente_controller.get_paciente(db, paciente_cedula=paciente_cedula)
     if db_paciente is None:
         raise HTTPException(status_code=404, detail="Paciente no encontrado")
     return db_paciente
 
 
-@router.delete("/{paciente_id}", response_model=PacienteResponse, tags=["Pacientes"])
+@router.delete(
+    "/{paciente_cedula}", response_model=PacienteResponse, tags=["Pacientes"]
+)
 def delete_paciente(
-    paciente_id: UUID,
+    paciente_cedula: str,
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_active_user),
 ):
-    db_paciente = paciente_controller.delete_paciente(db, paciente_id)
+    db_paciente = paciente_controller.delete_paciente(db, paciente_cedula)
     if not db_paciente:
         raise HTTPException(status_code=404, detail="Paciente no encontrado")
     return db_paciente
@@ -83,7 +85,7 @@ def delete_paciente(
 
 @router.put("/{paciente_id}", response_model=PacienteResponse, tags=["Pacientes"])
 def update_paciente(
-    paciente_id: UUID,
+    paciente_cedula: str,
     paciente: PacienteCreate,
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_active_user),
@@ -92,14 +94,14 @@ def update_paciente(
     Actualiza la información de un paciente existente por su UUID.
     """
 
-    db_paciente = paciente_controller.get_paciente(db, paciente_id=paciente_id)
+    db_paciente = paciente_controller.get_paciente(db, paciente_cedula=paciente_cedula)
 
     if not db_paciente:
         raise HTTPException(status_code=404, detail="Paciente no encontrado")
 
     paciente_actualizado = paciente_controller.update_paciente(
         db,
-        paciente_id=paciente_id,
+        paciente_cedula=paciente_cedula,
         paciente_data=paciente,
         user_id=current_user.id_usuario,
     )

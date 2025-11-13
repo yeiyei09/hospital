@@ -36,7 +36,7 @@ def get_medico(db: Session, medico_cedula: str):
     return db.query(Medico).filter(Medico.cedulaMedico == medico_cedula).first()
 
 
-def get_medicos(db: Session, token: str = Depends(oauth2_scheme)):
+def get_medicos(db: Session):
     """Obtiene todos los pacientes registrados."""
     return db.query(Medico).all()
 
@@ -64,8 +64,8 @@ def update_medico(
     return db_medico
 
 
-def delete_medico(db: Session, medico_id: UUID):
-    db_medico = db.query(Medico).filter(Medico.idMedico == medico_id).first()
+def delete_medico(db: Session, medico_cedula: str):
+    db_medico = db.query(Medico).filter(Medico.cedulaMedico == medico_cedula).first()
     if db_medico:
         db.delete(db_medico)
         db.commit()

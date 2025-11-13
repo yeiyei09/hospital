@@ -15,6 +15,7 @@ class PacienteBase(BaseModel):
     nombrePaciente: str
     correoPaciente: EmailStr
     telefonoPaciente: Optional[str] = None
+    cedulaPaciente: Optional[str] = None
     direccionPaciente: Optional[str] = None
     fechaNacimiento: Optional[date] = None
 

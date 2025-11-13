@@ -21,6 +21,7 @@ class Paciente(AuditMixin, Base):
     nombrePaciente = Column(String, index=True)
     correoPaciente = Column(String, index=True)
     telefonoPaciente = Column(String, nullable=True)
+    cedulaPaciente = Column(String, nullable=True, index=True)
     direccionPaciente = Column(String, nullable=True)
     fechaNacimiento = Column(Date, nullable=True)
     # Campos de auditoría
