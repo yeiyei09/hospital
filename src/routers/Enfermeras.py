@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
+from uuid import UUID
 
 import src.controller.enfermera as enfermera_controller
 from database.connection import get_db
@@ -8,9 +9,9 @@ from src.auth.middleware import get_current_active_user
 from src.schemas.auth import UserResponse
 from src.schemas.enfermera import EnfermeraCreate, EnfermeraResponse
 
-# Creamos el router para los pacientes
-# Define un prefijo para las rutas y etiquetas para la documentación
-# En todas las rutas usamos router en lugar de app ya que aqui se abre otra instancia de APIRouter
+"""Creamos el router para los pacientes
+Define un prefijo para las rutas y etiquetas para la documentación
+En todas las rutas usamos router en lugar de app ya que aqui se abre otra instancia de APIRouter"""
 router = APIRouter(prefix="/enfermeras", tags=["Enfermeras"])
 
 # creacion de rutas para las enfermeras
@@ -22,27 +23,12 @@ def create_enfermera(
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_active_user),
 ):
-    db_enfermera = enfermera_controller.get_enfermera(
-        db, enfermera_id=enfermera.idEnfermera
+    """Crea una nueva enfermera (UUID autogenerado)"""
+
+    enfermera_creada = enfermera_controller.create_enfermera(
+        db=db, enfermera_data=enfermera, user_id=current_user.id_usuario
     )
-    if db_enfermera:  # validacion
-        raise HTTPException(status_code=400, detail="Enfermera ya registrada")
-    else:
-        enfermera_creada = enfermera_controller.create_enfermera(
-            db=db, enfermera=enfermera
-        )
-        return JSONResponse(
-            status_code=201,
-            content={
-                "detail": "Enfermera creada cerractamente",
-                "Cuerpo de la respuesta": {
-                    "Cedula de la Enfermera": enfermera.idEnfermera,
-                    "Nombre de la Enfermera": enfermera.nombreEnfermera,
-                    "Correo de la Enfermera": enfermera.correoEnfermera,
-                    "Area de la Enfermera": enfermera.area,
-                },
-            },
-        )
+    return enfermera_creada
 
 
 @router.get("/", response_model=list[EnfermeraResponse], tags=["Enfermeras"])
@@ -50,41 +36,29 @@ def read_all_enfermeras(
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_active_user),
 ):
-    dbGetEnfermeras = enfermera_controller.get_enfermeras(db)
-    if not dbGetEnfermeras:
+    enfermeras_db = enfermera_controller.get_enfermeras(db)
+    if not enfermeras_db:
         raise HTTPException(status_code=404, detail="No hay enfermeras registradas")
-    return dbGetEnfermeras
-
-
-@router.get("/{enfermera_id}", response_model=EnfermeraResponse, tags=["Enfermeras"])
-def read_one_enfermera(
-    enfermera_id: int,
-    db: Session = Depends(get_db),
-    current_user: UserResponse = Depends(get_current_active_user),
-):
-    db_enfermera = enfermera_controller.get_enfermera(db, enfermera_id=enfermera_id)
-    if db_enfermera is None:
-        raise HTTPException(status_code=404, detail="Enfermera no encontrada")
-    else:
-        return JSONResponse(
-            status_code=200,
-            content={
-                "detail": "Enfermera encontrada",
-                "data": {
-                    "cedula enfermera": db_enfermera.idEnfermera,
-                    "nombre de enfermera": db_enfermera.nombreEnfermera,
-                    "area de enfermera": db_enfermera.area,
-                    "correo de enfermera": db_enfermera.correoEnfermera,
-                },
-            },
-        )
+    return enfermeras_db
 
 
 @router.get(
-    "/area/{area}",
-    response_model=list[EnfermeraResponse],
-    tags=["Enfermeras"],
+    "/{enfermera_cedula}", response_model=EnfermeraResponse, tags=["Enfermeras"]
 )
+def read_one_enfermera(
+    enfermera_cedula: str,
+    db: Session = Depends(get_db),
+    current_user: UserResponse = Depends(get_current_active_user),
+):
+    db_enfermera = enfermera_controller.get_enfermera(
+        db, enfermera_cedula=enfermera_cedula
+    )
+    if db_enfermera is None:
+        raise HTTPException(status_code=404, detail="Enfermera no encontrada")
+    return db_enfermera
+
+
+@router.get("/area/{area}", response_model=list[EnfermeraResponse], tags=["Enfermeras"])
 def read_enfermeras_por_area(
     area: str,
     db: Session = Depends(get_db),
@@ -98,52 +72,40 @@ def read_enfermeras_por_area(
     return db_enfermeras_area
 
 
-@router.delete("/{enfermera_id}", response_model=EnfermeraResponse, tags=["Enfermeras"])
+@router.delete(
+    "/{enfermera_cedula}", response_model=EnfermeraResponse, tags=["Enfermeras"]
+)
 def delete_enfermera(
-    enfermera_id: int,
+    enfermera_cedula: str,
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_active_user),
 ):
-    db_enfermera = enfermera_controller.delete_enfermera(db, enfermera_id=enfermera_id)
+    db_enfermera = enfermera_controller.delete_enfermera(
+        db, enfermera_cedula=enfermera_cedula
+    )
     if db_enfermera is None:
         raise HTTPException(status_code=404, detail="Enfermera no encontrada")
-    else:
-        return JSONResponse(
-            status_code=200,
-            content={
-                "detail": "Enfermera eliminada correctamente",
-                "data": {
-                    "Cedula de la Enfermera": db_enfermera.idEnfermera,
-                    "Nombre de la Enfermera": db_enfermera.nombreEnfermera,
-                    "Correo de la Enfermera": db_enfermera.correoEnfermera,
-                    "Area de la Enfermera": db_enfermera.area,
-                },
-            },
-        )
+    return db_enfermera
 
 
-@router.put("/{enfermera_id}", response_model=EnfermeraResponse, tags=["Enfermeras"])
+@router.put(
+    "/{enfermera_cedula}", response_model=EnfermeraResponse, tags=["Enfermeras"]
+)
 def update_enfermera(
-    enfermera_id: int,
+    enfermera_cedula: str,
     enfermera: EnfermeraCreate,
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_active_user),
 ):
-    db_enfermera = enfermera_controller.update_enfermera(
-        db, enfermera_id=enfermera_id, enfermera=enfermera
+    db_enfermera = enfermera_controller.get_enfermera(
+        db, enfermera_cedula=enfermera_cedula
     )
-    if db_enfermera is None:
+    if not db_enfermera:
         raise HTTPException(status_code=404, detail="Enfermera no encontrada")
-    else:
-        return JSONResponse(
-            status_code=201,
-            content={
-                "detail": "Enfermera actualizada correctamente",
-                "data": {
-                    "Cedula de la Enfermera": enfermera.idEnfermera,
-                    "Nombre de la Enfermera": enfermera.nombreEnfermera,
-                    "Correo de la Enfermera": enfermera.correoEnfermera,
-                    "Area de la Enfermera": enfermera.area,
-                },
-            },
-        )
+    enfermera_actualizada = enfermera_controller.update_enfermera(
+        db,
+        enfermera_cedula=enfermera_cedula,
+        enfermera_data=enfermera,
+        user_id=current_user.id_usuario,
+    )
+    return enfermera_actualizada

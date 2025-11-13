@@ -12,12 +12,11 @@ from pydantic import BaseModel, EmailStr
 class EnfermeraBase(BaseModel):
     """Base schema for Enfermera with common fields."""
 
-    idEnfermera: str
     nombreEnfermera: str
     correoEnfermera: EmailStr
     telefonoEnfermera: Optional[str] = None
-    especialidad: Optional[str] = None
-    numeroColegiatura: Optional[str] = None
+    cedulaEnfermera: Optional[str] = None
+    areaEnfermera: Optional[str] = None
 
 
 class EnfermeraCreate(EnfermeraBase):

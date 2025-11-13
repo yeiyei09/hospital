@@ -1,25 +1,32 @@
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-
 from src.auth.jwt_handler import verify_token
+from uuid import UUID
+from src.entities.enfermera import Enfermera
+from src.schemas.enfermera import EnfermeraCreate
+from datetime import datetime, date
 
-from src.entities.enfermera import Enfermera as enfermera
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
 
+"""A partir de aqui hacemos metodos para las enfermeras
+
+Metodos para crear, leer, actualizar y eliminar enfermeras"""
+
 
 def create_enfermera(
-    db: Session, enfermera: enfermera, token: str = Depends(oauth2_scheme)
+    db: Session, enfermera_data: EnfermeraCreate, user_id: UUID = None
 ):
-    token_data = verify_token(token)
-    if token_data["rol"] not in ["admin"]:
-        raise HTTPException(status_code=403, detail="Forbidden")
-    new_enfermera = enfermera(
-        idEnfermera=str(enfermera.idEnfermera),
-        nombreEnfermera=enfermera.nombreEnfermera,
-        area=enfermera.area,
-        correoEnfermera=enfermera.correoEnfermera,
+    """Crea una nueva enfermera con UUID autogenerado."""
+    new_enfermera = Enfermera(
+        nombreEnfermera=enfermera_data.nombreEnfermera,
+        correoEnfermera=enfermera_data.correoEnfermera,
+        telefonoEnfermera=enfermera_data.telefonoEnfermera,
+        cedulaEnfermera=enfermera_data.cedulaEnfermera,
+        areaEnfermera=enfermera_data.areaEnfermera,
+        id_usuario_creacion=user_id,
+        fecha_creacion=datetime.utcnow(),
     )
     db.add(new_enfermera)
     db.commit()
@@ -27,58 +34,59 @@ def create_enfermera(
     return new_enfermera
 
 
-def get_enfermera(db: Session, enfermera_id: str, token: str = Depends(oauth2_scheme)):
-    token_data = verify_token(token)
-    if token_data["rol"] not in ["admin", "medico", "enfermera"]:
-        raise HTTPException(status_code=403, detail="Forbidden")
-    return db.query(enfermera).filter(enfermera.idEnfermera == enfermera_id).first()
+def get_enfermera(db: Session, enfermera_cedula: str):
+    """Obtiene una enfermera por su cedula."""
+    return (
+        db.query(Enfermera)
+        .filter(Enfermera.cedulaEnfermera == enfermera_cedula)
+        .first()
+    )
 
 
-def get_enfermeras(db: Session, token: str = Depends(oauth2_scheme)):
-    token_data = verify_token(token)
-    if token_data["rol"] not in ["admin", "medico", "enfermera"]:
-        raise HTTPException(status_code=403, detail="Forbidden")
-    return db.query(enfermera).all()
+def get_enfermeras(db: Session):
+    """Obtiene todas las enfermeras registradas."""
+    return db.query(Enfermera).all()
 
 
-def get_enfermeras_por_area(
-    db: Session, area: str, token: str = Depends(oauth2_scheme)
-):
-    token_data = verify_token(token)
-    if token_data["rol"] not in ["admin", "medico", "enfermera"]:
-        raise HTTPException(status_code=403, detail="Forbidden")
-    return db.query(enfermera).filter(enfermera.area == area).all()
+def get_enfermeras_por_area(db: Session, area: str):
+    """Obtiene todas las enfermeras por area."""
+    return db.query(Enfermera).filter(Enfermera.areaEnfermera == area).all()
 
 
 def update_enfermera(
     db: Session,
-    enfermera_id: str,
-    enfermera: enfermera,
-    token: str = Depends(oauth2_scheme),
+    enfermera_cedula: str,
+    enfermera_data: EnfermeraCreate,
+    user_id: UUID,
 ):
-    token_data = verify_token(token)
-    if token_data["rol"] not in ["admin"]:
-        raise HTTPException(status_code=403, detail="Forbidden")
+    """Actualiza una enfermera existente."""
+
     db_enfermera = (
-        db.query(enfermera).filter(enfermera.idEnfermera == enfermera_id).first()
+        db.query(Enfermera)
+        .filter(Enfermera.cedulaEnfermera == enfermera_cedula)
+        .first()
     )
-    if db_enfermera:
-        db_enfermera.nombreEnfermera = enfermera.nombreEnfermera
-        db_enfermera.area = enfermera.area
-        db_enfermera.correoEnfermera = enfermera.correoEnfermera
-        db.commit()
-        db.refresh(db_enfermera)
+    if not db_enfermera:
+        return None
+
+    db_enfermera.nombreEnfermera = enfermera_data.nombreEnfermera
+    db_enfermera.areaEnfermera = enfermera_data.areaEnfermera
+    db_enfermera.correoEnfermera = enfermera_data.correoEnfermera
+    db_enfermera.telefonoEnfermera = enfermera_data.telefonoEnfermera
+    db_enfermera.cedulaEnfermera = enfermera_data.cedulaEnfermera
+    db_enfermera.id_usuario_actualizacion = user_id
+    db_enfermera.fecha_actualizacion = datetime.utcnow()
+
+    db.commit()
+    db.refresh(db_enfermera)
     return db_enfermera
 
 
-def delete_enfermera(
-    db: Session, enfermera_id: str, token: str = Depends(oauth2_scheme)
-):
-    token_data = verify_token(token)
-    if token_data["rol"] not in ["admin"]:
-        raise HTTPException(status_code=403, detail="Forbidden")
+def delete_enfermera(db: Session, enfermera_cedula: str):
     db_enfermera = (
-        db.query(enfermera).filter(enfermera.idEnfermera == enfermera_id).first()
+        db.query(Enfermera)
+        .filter(Enfermera.cedulaEnfermera == enfermera_cedula)
+        .first()
     )
     if db_enfermera:
         db.delete(db_enfermera)

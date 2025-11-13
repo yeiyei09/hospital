@@ -83,7 +83,7 @@ def delete_paciente(
     return db_paciente
 
 
-@router.put("/{paciente_id}", response_model=PacienteResponse, tags=["Pacientes"])
+@router.put("/{paciente_cedula}", response_model=PacienteResponse, tags=["Pacientes"])
 def update_paciente(
     paciente_cedula: str,
     paciente: PacienteCreate,
