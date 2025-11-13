@@ -34,13 +34,9 @@ def create_enfermera(
     return new_enfermera
 
 
-def get_enfermera(db: Session, enfermera_cedula: str):
+def get_enfermera(db: Session, enfermera_id: UUID):
     """Obtiene una enfermera por su cedula."""
-    return (
-        db.query(Enfermera)
-        .filter(Enfermera.cedulaEnfermera == enfermera_cedula)
-        .first()
-    )
+    return db.query(Enfermera).filter(Enfermera.idEnfermera == enfermera_id).first()
 
 
 def get_enfermeras(db: Session):
@@ -55,16 +51,14 @@ def get_enfermeras_por_area(db: Session, area: str):
 
 def update_enfermera(
     db: Session,
-    enfermera_cedula: str,
+    enfermera_id: UUID,
     enfermera_data: EnfermeraCreate,
     user_id: UUID,
 ):
     """Actualiza una enfermera existente."""
 
     db_enfermera = (
-        db.query(Enfermera)
-        .filter(Enfermera.cedulaEnfermera == enfermera_cedula)
-        .first()
+        db.query(Enfermera).filter(Enfermera.idEnfermera == enfermera_id).first()
     )
     if not db_enfermera:
         return None
@@ -82,11 +76,9 @@ def update_enfermera(
     return db_enfermera
 
 
-def delete_enfermera(db: Session, enfermera_cedula: str):
+def delete_enfermera(db: Session, enfermera_id: UUID):
     db_enfermera = (
-        db.query(Enfermera)
-        .filter(Enfermera.cedulaEnfermera == enfermera_cedula)
-        .first()
+        db.query(Enfermera).filter(Enfermera.idEnfermera == enfermera_id).first()
     )
     if db_enfermera:
         db.delete(db_enfermera)

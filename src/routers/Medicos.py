@@ -46,33 +46,33 @@ def read_all_medicos(
     return dbGetMedicos
 
 
-@router.get("/{medico_cedula}", response_model=MedicoResponse, tags=["Médicos"])
+@router.get("/{medico_id}", response_model=MedicoResponse, tags=["Médicos"])
 def read_one_medico(
-    medico_cedula: str,
+    medico_id: UUID,
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_active_user),
 ):
-    db_medico = medico_controller.get_medico(db, medico_cedula=medico_cedula)
+    db_medico = medico_controller.get_medico(db, medico_id=medico_id)
     if db_medico is None:
         raise HTTPException(status_code=404, detail="Médico no encontrado")
     return db_medico  # devuelve JSON del medico
 
 
-@router.delete("/{medico_cedula}", response_model=MedicoResponse, tags=["Médicos"])
+@router.delete("/{medico_id}", response_model=MedicoResponse, tags=["Médicos"])
 def delete_medico(
-    medico_cedula: str,
+    medico_id: UUID,
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_active_user),
 ):
-    db_medico = medico_controller.delete_medico(db, medico_cedula)
+    db_medico = medico_controller.delete_medico(db, medico_id)
     if db_medico is None:
         raise HTTPException(status_code=404, detail="Médico no encontrado")
     return db_medico
 
 
-@router.put("/{medico_cedula}", response_model=MedicoResponse, tags=["Médicos"])
+@router.put("/{medico_id}", response_model=MedicoResponse, tags=["Médicos"])
 def update_medico(
-    medico_cedula: str,
+    medico_id: UUID,
     medico: MedicoCreate,
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_active_user),
@@ -80,7 +80,7 @@ def update_medico(
     """
     Actualiza la información de un medico existente por su cedula.
     """
-    db_medico = medico_controller.get_medico(db, medico_cedula=medico_cedula)
+    db_medico = medico_controller.get_medico(db, medico_id=medico_id)
 
     if db_medico is None:
         raise HTTPException(status_code=404, detail="Médico no encontrado")

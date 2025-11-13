@@ -28,6 +28,7 @@ class EnfermeraCreate(EnfermeraBase):
 class EnfermeraResponse(EnfermeraBase):
     """Schema for Enfermera response."""
 
+    idEnfermera: UUID
     id_usuario_creacion: Optional[UUID] = None
     id_usuario_actualizacion: Optional[UUID] = None
     fecha_creacion: Optional[datetime] = None

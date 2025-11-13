@@ -42,17 +42,13 @@ def read_all_enfermeras(
     return enfermeras_db
 
 
-@router.get(
-    "/{enfermera_cedula}", response_model=EnfermeraResponse, tags=["Enfermeras"]
-)
+@router.get("/{enfermera_id}", response_model=EnfermeraResponse, tags=["Enfermeras"])
 def read_one_enfermera(
-    enfermera_cedula: str,
+    enfermera_id: UUID,
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_active_user),
 ):
-    db_enfermera = enfermera_controller.get_enfermera(
-        db, enfermera_cedula=enfermera_cedula
-    )
+    db_enfermera = enfermera_controller.get_enfermera(db, enfermera_id=enfermera_id)
     if db_enfermera is None:
         raise HTTPException(status_code=404, detail="Enfermera no encontrada")
     return db_enfermera
@@ -72,17 +68,13 @@ def read_enfermeras_por_area(
     return db_enfermeras_area
 
 
-@router.delete(
-    "/{enfermera_cedula}", response_model=EnfermeraResponse, tags=["Enfermeras"]
-)
+@router.delete("/{enfermera_id}", response_model=EnfermeraResponse, tags=["Enfermeras"])
 def delete_enfermera(
-    enfermera_cedula: str,
+    enfermera_id: UUID,
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_active_user),
 ):
-    db_enfermera = enfermera_controller.delete_enfermera(
-        db, enfermera_cedula=enfermera_cedula
-    )
+    db_enfermera = enfermera_controller.delete_enfermera(db, enfermera_id=enfermera_id)
     if db_enfermera is None:
         raise HTTPException(status_code=404, detail="Enfermera no encontrada")
     return db_enfermera
@@ -92,19 +84,17 @@ def delete_enfermera(
     "/{enfermera_cedula}", response_model=EnfermeraResponse, tags=["Enfermeras"]
 )
 def update_enfermera(
-    enfermera_cedula: str,
+    enfermera_id: UUID,
     enfermera: EnfermeraCreate,
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_active_user),
 ):
-    db_enfermera = enfermera_controller.get_enfermera(
-        db, enfermera_cedula=enfermera_cedula
-    )
+    db_enfermera = enfermera_controller.get_enfermera(db, enfermera_id=enfermera_id)
     if not db_enfermera:
         raise HTTPException(status_code=404, detail="Enfermera no encontrada")
     enfermera_actualizada = enfermera_controller.update_enfermera(
         db,
-        enfermera_cedula=enfermera_cedula,
+        enfermera_id=enfermera_id,
         enfermera_data=enfermera,
         user_id=current_user.id_usuario,
     )

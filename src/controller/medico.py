@@ -31,9 +31,9 @@ def create_medico(db: Session, medico_data: MedicoCreate, user_id: UUID = None):
     return new_medico
 
 
-def get_medico(db: Session, medico_cedula: str):
+def get_medico(db: Session, medico_id: UUID):
     """Obtiene un paciente por su UUID."""
-    return db.query(Medico).filter(Medico.cedulaMedico == medico_cedula).first()
+    return db.query(Medico).filter(Medico.idMedico == medico_id).first()
 
 
 def get_medicos(db: Session):
@@ -42,10 +42,10 @@ def get_medicos(db: Session):
 
 
 def update_medico(
-    db: Session, medico_cedula: str, medico_data: MedicoCreate, user_id: UUID
+    db: Session, medico_id: UUID, medico_data: MedicoCreate, user_id: UUID
 ):
     """Actualiza un medico existente."""
-    db_medico = db.query(Medico).filter(Medico.cedulaMedico == medico_cedula).first()
+    db_medico = db.query(Medico).filter(Medico.idMedico == medico_id).first()
     if not db_medico:
         return None
 
@@ -64,8 +64,8 @@ def update_medico(
     return db_medico
 
 
-def delete_medico(db: Session, medico_cedula: str):
-    db_medico = db.query(Medico).filter(Medico.cedulaMedico == medico_cedula).first()
+def delete_medico(db: Session, medico_id: UUID):
+    db_medico = db.query(Medico).filter(Medico.idMedico == medico_id).first()
     if db_medico:
         db.delete(db_medico)
         db.commit()
