@@ -5,14 +5,19 @@ import src.controller.cita as cita_controller
 import src.controller.medico as medico_controller
 import src.controller.paciente as paciente_controller
 from database.connection import get_db
-from src.auth.middleware import get_current_active_user
+from src.auth.middleware import get_current_active_user, require_roles
 from src.schemas.auth import UserResponse
 from src.schemas.cita import CitaCreate, CitaResponse
 
 router = APIRouter(prefix="/citas", tags=["Citas"])
 
 
-@router.post("/", response_model=CitaResponse, status_code=201)
+@router.post(
+    "/",
+    response_model=CitaResponse,
+    status_code=201,
+    dependencies=[Depends(require_roles("admin", "medico"))],
+)
 def create_cita(
     cita: CitaCreate,
     db: Session = Depends(get_db),
@@ -33,7 +38,11 @@ def create_cita(
     return cita_creada
 
 
-@router.get("/", response_model=list[CitaResponse])
+@router.get(
+    "/",
+    response_model=list[CitaResponse],
+    dependencies=[Depends(require_roles("admin", "medico", "enfermera"))],
+)
 def read_all_citas(
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_active_user),
@@ -45,7 +54,11 @@ def read_all_citas(
     return citas
 
 
-@router.get("/{cita_id}", response_model=CitaResponse)
+@router.get(
+    "/{cita_id}",
+    response_model=CitaResponse,
+    dependencies=[Depends(require_roles("admin", "medico", "enfermera", "paciente"))],
+)
 def read_one_cita(
     cita_id: UUID,
     db: Session = Depends(get_db),
@@ -58,7 +71,11 @@ def read_one_cita(
     return db_cita
 
 
-@router.put("/{cita_id}", response_model=CitaResponse)
+@router.put(
+    "/{cita_id}",
+    response_model=CitaResponse,
+    dependencies=[Depends(require_roles("admin", "medico"))],
+)
 def update_cita(
     cita_id: UUID,
     cita: CitaCreate,
@@ -74,7 +91,11 @@ def update_cita(
     return cita_actualizada
 
 
-@router.delete("/{cita_id}", response_model=CitaResponse)
+@router.delete(
+    "/{cita_id}",
+    response_model=CitaResponse,
+    dependencies=[Depends(require_roles("admin"))],
+)
 def delete_cita(
     cita_id: UUID,
     db: Session = Depends(get_db),

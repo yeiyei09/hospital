@@ -5,7 +5,7 @@ from uuid import UUID
 
 import src.controller.enfermera as enfermera_controller
 from database.connection import get_db
-from src.auth.middleware import get_current_active_user
+from src.auth.middleware import get_current_active_user, require_roles
 from src.schemas.auth import UserResponse
 from src.schemas.enfermera import EnfermeraCreate, EnfermeraResponse
 
@@ -17,7 +17,12 @@ router = APIRouter(prefix="/enfermeras", tags=["Enfermeras"])
 # creacion de rutas para las enfermeras
 
 
-@router.post("/", response_model=EnfermeraResponse, tags=["Enfermeras"])
+@router.post(
+    "/",
+    response_model=EnfermeraResponse,
+    tags=["Enfermeras"],
+    dependencies=[Depends(require_roles("admin"))],
+)
 def create_enfermera(
     enfermera: EnfermeraCreate,
     db: Session = Depends(get_db),
@@ -31,7 +36,12 @@ def create_enfermera(
     return enfermera_creada
 
 
-@router.get("/", response_model=list[EnfermeraResponse], tags=["Enfermeras"])
+@router.get(
+    "/",
+    response_model=list[EnfermeraResponse],
+    tags=["Enfermeras"],
+    dependencies=[Depends(require_roles("admin", "medico", "enfermera"))],
+)
 def read_all_enfermeras(
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_active_user),
@@ -42,7 +52,12 @@ def read_all_enfermeras(
     return enfermeras_db
 
 
-@router.get("/{enfermera_id}", response_model=EnfermeraResponse, tags=["Enfermeras"])
+@router.get(
+    "/{enfermera_id}",
+    response_model=EnfermeraResponse,
+    tags=["Enfermeras"],
+    dependencies=[Depends(require_roles("admin", "medico", "enfermera"))],
+)
 def read_one_enfermera(
     enfermera_id: UUID,
     db: Session = Depends(get_db),
@@ -54,7 +69,12 @@ def read_one_enfermera(
     return db_enfermera
 
 
-@router.get("/area/{area}", response_model=list[EnfermeraResponse], tags=["Enfermeras"])
+@router.get(
+    "/area/{area}",
+    response_model=list[EnfermeraResponse],
+    tags=["Enfermeras"],
+    dependencies=[Depends(require_roles("admin", "medico", "enfermera"))],
+)
 def read_enfermeras_por_area(
     area: str,
     db: Session = Depends(get_db),
@@ -68,7 +88,12 @@ def read_enfermeras_por_area(
     return db_enfermeras_area
 
 
-@router.delete("/{enfermera_id}", response_model=EnfermeraResponse, tags=["Enfermeras"])
+@router.delete(
+    "/{enfermera_id}",
+    response_model=EnfermeraResponse,
+    tags=["Enfermeras"],
+    dependencies=[Depends(require_roles("admin"))],
+)
 def delete_enfermera(
     enfermera_id: UUID,
     db: Session = Depends(get_db),
@@ -81,7 +106,10 @@ def delete_enfermera(
 
 
 @router.put(
-    "/{enfermera_cedula}", response_model=EnfermeraResponse, tags=["Enfermeras"]
+    "/{enfermera_cedula}",
+    response_model=EnfermeraResponse,
+    tags=["Enfermeras"],
+    dependencies=[Depends(require_roles("admin"))],
 )
 def update_enfermera(
     enfermera_id: UUID,

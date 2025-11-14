@@ -12,26 +12,48 @@ from src.auth.jwt_handler import create_access_token, get_password_hash, verify_
 from src.entities.usuario import Usuario
 from src.schemas.auth import LoginRequest, UserCreate, UserResponse
 
+from src.entities.paciente import Paciente
+from src.entities.medico import Medico
+from src.entities.enfermera import Enfermera
+
 
 def create_user(db: Session, user: UserCreate) -> Usuario:
     """
     Crea un nuevo usuario en la base de datos.
-
-    Args:
-        db: Sesión de base de datos
-        user: Datos del usuario a crear
-
-    Returns:
-        Usuario: Usuario creado
+    validando que exista un registro previo de paciente, médico o enfermera
+    si el rol lo requiere.
     """
-    # Verificar si el usuario ya existe
-    existing_user = get_user_by_username(db, user.username)
-    if existing_user:
-        raise ValueError("El nombre de usuario ya existe")
 
-    existing_email = get_user_by_email(db, user.email)
-    if existing_email:
+    rol_valido = user.rol.lower()
+    # Validar rol permitido
+    roles_permitidos = ["admin", "paciente", "medico", "enfermera"]
+    if rol_valido not in roles_permitidos:
+        raise ValueError(f"Rol no válido. Debe ser uno de: {roles_permitidos}")
+
+    # Verificar si el usuario ya existe por nombre o correo
+    if get_user_by_username(db, user.username):
+        raise ValueError("El nombre de usuario ya existe")
+    if get_user_by_email(db, user.email):
         raise ValueError("El correo electrónico ya está registrado")
+
+    # Validar que exista el registro base antes de crear usuario
+    if rol_valido == "paciente":
+        existente = (
+            db.query(Paciente).filter(Paciente.correoPaciente == user.email).first()
+        )
+    elif rol_valido == "medico":
+        existente = db.query(Medico).filter(Medico.correoMedico == user.email).first()
+    elif rol_valido == "enfermera":
+        existente = (
+            db.query(Enfermera).filter(Enfermera.correoEnfermera == user.email).first()
+        )
+    else:
+        existente = True  # los admins no necesitan validar identidad
+    if not existente:
+        raise ValueError(
+            f"No existe un registro en la tabla correspondiente para el rol '{rol_valido}'. "
+            f"Debes registrar primero el {rol_valido} antes de crear el usuario."
+        )
 
     # Crear nuevo usuario
     hashed_password = get_password_hash(user.password)

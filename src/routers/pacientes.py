@@ -5,7 +5,7 @@ from uuid import UUID
 
 import src.controller.paciente as paciente_controller
 from database.connection import get_db
-from src.auth.middleware import get_current_active_user
+from src.auth.middleware import get_current_active_user, require_roles
 from src.schemas.auth import UserResponse
 from src.schemas.paciente import PacienteCreate, PacienteResponse
 
@@ -16,7 +16,12 @@ En todas las rutas usamos router en lugar de app ya que aqui se abre otra instan
 router = APIRouter(prefix="/pacientes", tags=["Pacientes"])
 
 
-@router.post("/", response_model=PacienteResponse, tags=["Pacientes"])
+@router.post(
+    "/",
+    response_model=PacienteResponse,
+    tags=["Pacientes"],
+    dependencies=[Depends(require_roles("admin", "medico"))],
+)
 def create_paciente(
     paciente: PacienteCreate,
     db: Session = Depends(get_db),
@@ -32,7 +37,12 @@ def create_paciente(
     return paciente_creado
 
 
-@router.get("/", response_model=list[PacienteResponse], tags=["Pacientes"])
+@router.get(
+    "/",
+    response_model=list[PacienteResponse],
+    tags=["Pacientes"],
+    dependencies=[Depends(require_roles("admin", "medico"))],
+)
 def read_all_pacientes(
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_active_user),
@@ -57,7 +67,12 @@ def read_all_pacientes(
 """
 
 
-@router.get("/{paciente_id}", response_model=PacienteResponse, tags=["Pacientes"])
+@router.get(
+    "/{paciente_id}",
+    response_model=PacienteResponse,
+    tags=["Pacientes"],
+    dependencies=[Depends(require_roles("admin", "medico"))],
+)
 def read_one_paciente(
     paciente_id: UUID,
     db: Session = Depends(get_db),
@@ -69,7 +84,12 @@ def read_one_paciente(
     return db_paciente
 
 
-@router.delete("/{paciente_id}", response_model=PacienteResponse, tags=["Pacientes"])
+@router.delete(
+    "/{paciente_id}",
+    response_model=PacienteResponse,
+    tags=["Pacientes"],
+    dependencies=[Depends(require_roles("admin"))],
+)
 def delete_paciente(
     paciente_id: UUID,
     db: Session = Depends(get_db),
@@ -81,7 +101,12 @@ def delete_paciente(
     return db_paciente
 
 
-@router.put("/{paciente_id}", response_model=PacienteResponse, tags=["Pacientes"])
+@router.put(
+    "/{paciente_id}",
+    response_model=PacienteResponse,
+    tags=["Pacientes"],
+    dependencies=[Depends(require_roles("admin"))],
+)
 def update_paciente(
     paciente_id: UUID,
     paciente: PacienteCreate,

@@ -5,7 +5,7 @@ from uuid import UUID
 
 import src.controller.medico as medico_controller
 from database.connection import get_db
-from src.auth.middleware import get_current_active_user
+from src.auth.middleware import get_current_active_user, require_roles
 from src.schemas.auth import UserResponse
 from src.schemas.medico import MedicoCreate, MedicoResponse
 
@@ -20,7 +20,12 @@ router = APIRouter(prefix="/medicos", tags=["Médicos"])
 """Creamos rutas para los medicos"""
 
 
-@router.post("/", response_model=MedicoResponse, tags=["Médicos"])
+@router.post(
+    "/",
+    response_model=MedicoResponse,
+    tags=["Médicos"],
+    dependencies=[Depends(require_roles("admin"))],
+)
 def create_medico(
     medico: MedicoCreate,
     db: Session = Depends(get_db),
@@ -35,7 +40,12 @@ def create_medico(
     return medico_creado
 
 
-@router.get("/", response_model=list[MedicoResponse], tags=["Médicos"])
+@router.get(
+    "/",
+    response_model=list[MedicoResponse],
+    tags=["Médicos"],
+    dependencies=[Depends(require_roles("admin", "medico", "enfermera"))],
+)
 def read_all_medicos(
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_active_user),
@@ -46,7 +56,12 @@ def read_all_medicos(
     return dbGetMedicos
 
 
-@router.get("/{medico_id}", response_model=MedicoResponse, tags=["Médicos"])
+@router.get(
+    "/{medico_id}",
+    response_model=MedicoResponse,
+    tags=["Médicos"],
+    dependencies=[Depends(require_roles("admin", "medico", "enfermera"))],
+)
 def read_one_medico(
     medico_id: UUID,
     db: Session = Depends(get_db),
@@ -58,7 +73,12 @@ def read_one_medico(
     return db_medico  # devuelve JSON del medico
 
 
-@router.delete("/{medico_id}", response_model=MedicoResponse, tags=["Médicos"])
+@router.delete(
+    "/{medico_id}",
+    response_model=MedicoResponse,
+    tags=["Médicos"],
+    dependencies=[Depends(require_roles("admin"))],
+)
 def delete_medico(
     medico_id: UUID,
     db: Session = Depends(get_db),
@@ -70,7 +90,12 @@ def delete_medico(
     return db_medico
 
 
-@router.put("/{medico_id}", response_model=MedicoResponse, tags=["Médicos"])
+@router.put(
+    "/{medico_id}",
+    response_model=MedicoResponse,
+    tags=["Médicos"],
+    dependencies=[Depends(require_roles("admin"))],
+)
 def update_medico(
     medico_id: UUID,
     medico: MedicoCreate,
@@ -86,7 +111,7 @@ def update_medico(
         raise HTTPException(status_code=404, detail="Médico no encontrado")
     medico_actualizado = medico_controller.update_medico(
         db,
-        medico_cedula=medico_cedula,
+        medico_id=medico_id,
         medico_data=medico,
         user_id=current_user.id_usuario,
     )

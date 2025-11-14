@@ -106,3 +106,20 @@ def require_role(required_role: str):
 require_admin = require_role("admin")
 require_medico = require_role("medico")
 require_enfermera = require_role("enfermera")
+
+
+def require_roles(*roles: str):
+    """
+    Crea un dependency que permite acceso sólo a ciertos roles.
+    Ejemplo: @router.post(..., dependencies=[Depends(require_roles("admin", "medico"))])
+    """
+
+    def role_checker(current_user: UserResponse = Depends(get_current_active_user)):
+        if current_user.rol.lower() not in [rol.lower() for rol in roles]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"No tienes permisos. Se requiere uno de los roles: {roles}",
+            )
+        return current_user
+
+    return role_checker

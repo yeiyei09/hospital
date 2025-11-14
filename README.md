@@ -418,3 +418,36 @@ Respuesta exitosa (201 Created):
 }
 
 Tags: Facturas
+
+
+---- ROLES -----
+
+Pacientes:
+-POST: admin, medico
+-get: admin, medico
+-get{paciente_id}: admin, medico
+-delete{paciente_id}: admin
+-put{paciente_id}: admin
+
+Medicos:
+-POST: admin
+-GET: admin, medico, enfermera
+-GET{medico_id}: admin, medico, enfermera
+-DELETE{medico_id}: admin
+-PUT{medico_id}: admin
+
+Enfermeras:
+-Enfermeras:
+-POST: admin
+-GET: admin, medico, enfermera
+-GET{enfermera_id}: admin, medico, enfermera
+-GET{area}: admin, medico, enfermera
+-DELETE{enfermera_id}: admin
+-PUT{enfermera_id}: admin
+
+Citas:
+-POST: admin, medico
+-GET: admin, medico, enfermera
+-GET{cita_id}: admin, medico, enfermera, paciente
+-DELETE{cita_id}: admin
+-PUT{cita_id}: admin, medico
