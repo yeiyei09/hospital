@@ -109,3 +109,15 @@ def verify_token(token: str) -> dict:
             detail="Token inválido",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+
+def verify_reset_token(token: str) -> dict:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("type") != "reset":
+            raise HTTPException(status_code=400, detail="Tipo de token inválido")
+        return payload
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=400, detail="Token expirado")
+    except jwt.JWTError:
+        raise HTTPException(status_code=400, detail="Token inválido")

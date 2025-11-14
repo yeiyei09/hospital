@@ -451,3 +451,7 @@ Citas:
 -GET{cita_id}: admin, medico, enfermera, paciente
 -DELETE{cita_id}: admin
 -PUT{cita_id}: admin, medico
+
+**IMPORTANTE PARA LAS DEPENDENCIAS**
+EJECUTAR:
+pip install --upgrade "fastapi>=0.111.0" "pydantic>=2.0" "uvicorn>=0.30.0"

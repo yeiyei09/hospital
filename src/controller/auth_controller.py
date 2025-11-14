@@ -154,3 +154,76 @@ def create_user_token(user: Usuario) -> str:
         "rol": user.rol,
     }
     return create_access_token(data=token_data)
+
+
+def update_user_password(
+    db: Session, user_id: UUID, new_password: str, updated_by: UUID
+) -> Usuario:
+    """
+    Actualiza únicamente la contraseña del usuario indicado.
+    """
+
+    user = get_user_by_id(db, user_id)
+    if not user:
+        raise ValueError("Usuario no encontrado")
+
+    hashed_password = get_password_hash(new_password)
+
+    user.password_hash = hashed_password
+    user.id_usuario_actualizacion = updated_by
+    user.fecha_actualizacion = datetime.utcnow()
+
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def verify_reset_email(db: Session, email: str) -> Usuario:
+    """
+    Verifica si el correo pertenece a un usuario con rol 'paciente'.
+
+    Args:
+        db: Sesión de base de datos
+        email: Correo electrónico a verificar
+
+    Returns:
+        Usuario válido para restablecimiento
+
+    Raises:
+        ValueError: Si el correo no existe o no es de un paciente
+    """
+    user = get_user_by_email(db, email)
+    if not user:
+        raise ValueError("Correo no válido")
+    if user.rol.lower() != "paciente":
+        raise ValueError("Correo no válido, comuníquese con el departamento de TI")
+    return user
+
+
+def reset_user_password(db: Session, email: str, new_password: str) -> Usuario:
+    """
+    Actualiza la contraseña de un usuario que haya pasado la verificación previa.
+
+    Args:
+        db: Sesión de base de datos
+        email: Correo del usuario
+        new_password: Nueva contraseña
+
+    Returns:
+        Usuario actualizado
+
+    Raises:
+        ValueError: Si el correo no existe o no pertenece a un paciente
+    """
+    user = get_user_by_email(db, email)
+    if not user:
+        raise ValueError("Correo no válido")
+    if user.rol.lower() != "paciente":
+        raise ValueError("Correo no válido, comuníquese con el departamento de TI")
+
+    hashed = get_password_hash(new_password)
+    user.password_hash = hashed
+    user.fecha_actualizacion = datetime.utcnow()
+    db.commit()
+    db.refresh(user)
+    return user

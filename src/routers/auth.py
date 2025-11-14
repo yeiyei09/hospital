@@ -2,16 +2,33 @@
 Authentication router for login and registration.
 """
 
+from src.auth.email_handler import send_reset_email
+from datetime import timedelta
 from database.connection import get_db
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from src.auth.jwt_handler import create_access_token, verify_token, verify_reset_token
 from sqlalchemy.orm import Session
 from src.auth.middleware import get_current_user
+from fastapi import BackgroundTasks
+from src.controller.auth_controller import get_user_by_email
+from src.schemas.auth import PasswordResetVerifyRequest, PasswordResetRequest
 from src.controller.auth_controller import (
     authenticate_user,
     create_user,
     create_user_token,
+    verify_reset_email,
+    reset_user_password,
 )
+from src.schemas.auth import (
+    LoginRequest,
+    LoginResponse,
+    UserCreate,
+    UserResponse,
+    PasswordResetVerifyRequest,
+    PasswordResetRequest,
+)
+from src.entities.usuario import Usuario
 from src.schemas.auth import LoginRequest, LoginResponse, UserCreate, UserResponse
 
 # OAuth2 scheme para extraer el token del header Authorization
@@ -147,3 +164,89 @@ def get_current_user_info(current_user: UserResponse = Depends(get_current_user)
         UserResponse: Datos del usuario actual
     """
     return current_user
+
+
+@router.post("/verify-reset-email", tags=["Autenticación"])
+def verify_reset_email_route(
+    request: PasswordResetVerifyRequest, db: Session = Depends(get_db)
+):
+    """
+    Verifica si el correo pertenece a un usuario con rol 'paciente'.
+    """
+    try:
+        user = verify_reset_email(db, request.email)
+        return {
+            "message": "Correo válido. Puede proceder con el restablecimiento de contraseña.",
+            "email": user.email,
+            "rol": user.rol,
+        }
+    except ValueError as e:
+        detail = str(e)
+        if "paciente" in detail.lower():
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=detail)
+
+
+@router.post("/reset-password", tags=["Autenticación"])
+def reset_password_route(request: PasswordResetRequest, db: Session = Depends(get_db)):
+    """
+    Restablece la contraseña del usuario verificado (rol paciente).
+    """
+    try:
+        reset_user_password(db, request.email, request.new_password)
+        return {"message": "Contraseña actualizada exitosamente."}
+    except ValueError as e:
+        detail = str(e)
+        if "paciente" in detail.lower():
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=detail)
+
+
+@router.post("/request-password-reset", tags=["Autenticación"])
+async def request_password_reset(
+    request: PasswordResetVerifyRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    """
+    Envía un correo de recuperación de contraseña al usuario si es 'paciente'.
+    """
+    user = get_user_by_email(db, request.email)
+    if not user:
+        raise HTTPException(status_code=404, detail="Correo no válido.")
+    if user.rol.lower() != "paciente":
+        raise HTTPException(
+            status_code=403, detail="Correo no válido, comuníquese con TI."
+        )
+
+    # Crea token único (15 minutos de duración)
+    token = create_access_token(
+        data={"sub": user.username, "email": user.email, "type": "reset"},
+        expires_delta=timedelta(minutes=15),
+    )
+
+    # Enviar email en segundo plano
+    background_tasks.add_task(send_reset_email, user.email, token)
+
+    return {
+        "message": "Correo de restablecimiento enviado. Verifique su bandeja de entrada."
+    }
+
+
+@router.post("/confirm-password-reset", tags=["Autenticación"])
+def confirm_password_reset(
+    request: PasswordResetRequest, db: Session = Depends(get_db)
+):
+    payload = verify_reset_token(request.token)
+    email = payload.get("email")
+
+    user = db.query(Usuario).filter(Usuario.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    from src.auth.jwt_handler import get_password_hash
+
+    user.password_hash = get_password_hash(request.new_password)
+    db.commit()
+    db.refresh(user)
+    return {"message": "Contraseña actualizada correctamente"}

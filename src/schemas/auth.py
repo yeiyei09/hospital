@@ -57,3 +57,23 @@ class TokenData(BaseModel):
     username: Optional[str] = None
     user_id: Optional[UUID] = None
     rol: Optional[str] = None
+
+
+class UserPasswordUpdate(BaseModel):
+    """Schema para actualizar únicamente la contraseña."""
+
+    password: str
+
+
+class PasswordResetVerifyRequest(BaseModel):
+    email: EmailStr
+
+
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+    new_password: str
+
+
+class PasswordResetRequest(BaseModel):
+    token: str
+    new_password: str
