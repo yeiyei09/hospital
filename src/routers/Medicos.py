@@ -47,13 +47,15 @@ def create_medico(
     dependencies=[Depends(require_roles("admin", "medico", "enfermera"))],
 )
 def read_all_medicos(
+    skip: int = 0,
+    limit: int = 10,
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_active_user),
 ):
-    dbGetMedicos = medico_controller.get_medicos(db)
-    if not dbGetMedicos:
+    medicos = medico_controller.get_medicos(db, skip=skip, limit=limit)
+    if not medicos:
         raise HTTPException(status_code=404, detail="No hay medicos registrados")
-    return dbGetMedicos
+    return medicos
 
 
 @router.get(

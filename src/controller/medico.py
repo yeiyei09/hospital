@@ -36,9 +36,9 @@ def get_medico(db: Session, medico_id: UUID):
     return db.query(Medico).filter(Medico.idMedico == medico_id).first()
 
 
-def get_medicos(db: Session):
-    """Obtiene todos los pacientes registrados."""
-    return db.query(Medico).all()
+def get_medicos(db: Session, skip: int = 0, limit: int = 10):
+    """Obtiene todos los médicos (con paginación)."""
+    return db.query(Medico).offset(skip).limit(limit).all()
 
 
 def update_medico(
