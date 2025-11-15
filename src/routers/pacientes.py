@@ -44,10 +44,13 @@ def create_paciente(
     dependencies=[Depends(require_roles("admin", "medico"))],
 )
 def read_all_pacientes(
+    skip: int = 0,
+    limit: int = 10,
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_active_user),
 ):
-    pacientes_db = paciente_controller.get_pacientes(db)
+    pacientes_db = paciente_controller.get_pacientes(db, skip=skip, limit=limit)
+
     if not pacientes_db:
         raise HTTPException(status_code=404, detail="No hay pacientes registrados")
     return pacientes_db

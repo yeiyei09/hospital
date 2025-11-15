@@ -32,9 +32,9 @@ def get_paciente(db: Session, paciente_id: UUID):
     return db.query(Paciente).filter(Paciente.idPaciente == paciente_id).first()
 
 
-def get_pacientes(db: Session):
+def get_pacientes(db: Session, skip: int = 0, limit: int = 10):
     """Obtiene todos los pacientes registrados."""
-    return db.query(Paciente).all()
+    return db.query(Paciente).offset(skip).limit(limit).all()
 
 
 def update_paciente(
