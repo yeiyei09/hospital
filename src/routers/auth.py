@@ -2,6 +2,8 @@
 Authentication router for login and registration.
 """
 
+from typing import List
+from src.auth.middleware import require_roles
 from src.auth.email_handler import send_reset_email
 from datetime import timedelta
 from database.connection import get_db
@@ -164,6 +166,16 @@ def get_current_user_info(current_user: UserResponse = Depends(get_current_user)
         UserResponse: Datos del usuario actual
     """
     return current_user
+
+
+@router.get(
+    "/usuarios",
+    response_model=List[UserResponse],
+    dependencies=[Depends(require_roles("admin"))],
+)
+def list_users(db: Session = Depends(get_db)):
+    """Obtiene todos los usuarios existentes."""
+    return db.query(Usuario).all()
 
 
 @router.post("/verify-reset-email", tags=["Autenticación"])
