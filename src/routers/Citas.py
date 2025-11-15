@@ -44,11 +44,12 @@ def create_cita(
     dependencies=[Depends(require_roles("admin", "medico", "enfermera"))],
 )
 def read_all_citas(
+    skip: int = 0,
+    limit: int = 10,
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_active_user),
 ):
-    """Obtiene todas las citas registradas."""
-    citas = cita_controller.get_citas(db)
+    citas = cita_controller.get_citas(db, skip=skip, limit=limit)
     if not citas:
         raise HTTPException(status_code=404, detail="No hay citas registradas")
     return citas

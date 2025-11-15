@@ -27,9 +27,10 @@ def get_cita(db: Session, cita_id: UUID):
     return db.query(Cita).filter(Cita.idCita == cita_id).first()
 
 
-def get_citas(db: Session):
-    """Obtiene todas las citas registradas."""
-    return db.query(Cita).all()
+def get_citas(db: Session, skip: int = 0, limit: int = 10):
+    print(">>> Ejecutando get_citas con skip:", skip, "limit:", limit)
+    """Obtiene todas las citas registradas (paginadas)."""
+    return db.query(Cita).offset(skip).limit(limit).all()
 
 
 def update_cita(db: Session, cita_id: UUID, cita_data: CitaCreate, user_id: UUID):
