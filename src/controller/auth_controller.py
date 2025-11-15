@@ -227,3 +227,28 @@ def reset_user_password(db: Session, email: str, new_password: str) -> Usuario:
     db.commit()
     db.refresh(user)
     return user
+
+
+def update_user(db: Session, user_id: UUID, updated_data: dict) -> Usuario:
+    user = get_user_by_id(db, user_id)
+    if not user:
+        raise ValueError("Usuario no encontrado")
+
+    for key, value in updated_data.items():
+        if hasattr(user, key) and value is not None:
+            setattr(user, key, value)
+
+    user.fecha_actualizacion = datetime.utcnow()
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+def delete_user(db: Session, user_id: UUID) -> Usuario:
+    user = get_user_by_id(db, user_id)
+    if not user:
+        raise ValueError("Usuario no encontrado")
+
+    db.delete(user)
+    db.commit()
+    return user

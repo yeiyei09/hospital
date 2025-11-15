@@ -2,6 +2,8 @@
 Authentication router for login and registration.
 """
 
+from datetime import datetime
+from uuid import UUID
 from typing import List
 from src.auth.middleware import require_roles
 from src.auth.email_handler import send_reset_email
@@ -14,13 +16,20 @@ from sqlalchemy.orm import Session
 from src.auth.middleware import get_current_user
 from fastapi import BackgroundTasks
 from src.controller.auth_controller import get_user_by_email
-from src.schemas.auth import PasswordResetVerifyRequest, PasswordResetRequest
+from src.schemas.auth import (
+    PasswordResetVerifyRequest,
+    PasswordResetRequest,
+    UserUpdate,
+)
 from src.controller.auth_controller import (
     authenticate_user,
     create_user,
     create_user_token,
     verify_reset_email,
     reset_user_password,
+    get_user_by_id,
+    update_user,
+    delete_user,
 )
 from src.schemas.auth import (
     LoginRequest,
@@ -262,3 +271,51 @@ def confirm_password_reset(
     db.commit()
     db.refresh(user)
     return {"message": "Contraseña actualizada correctamente"}
+
+
+@router.put(
+    "/usuarios/{user_id}",
+    response_model=UserResponse,
+    dependencies=[Depends(require_roles("admin"))],
+)
+def update_user(
+    user_id: UUID,
+    updated_user: UserUpdate,  # ✅ nota este cambio
+    db: Session = Depends(get_db),
+):
+    """
+    Actualiza un usuario existente (sin requerir password).
+    """
+    db_user = get_user_by_id(db, user_id)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    update_data = updated_user.dict(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(db_user, field, value)
+
+    db_user.fecha_actualizacion = datetime.utcnow()
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+
+@router.delete(
+    "/usuarios/{user_id}",
+    response_model=UserResponse,
+    dependencies=[Depends(require_roles("admin"))],
+)
+def delete_user(
+    user_id: UUID,
+    db: Session = Depends(get_db),
+):
+    """
+    Elimina completamente un usuario (solo admin).
+    """
+    db_user = get_user_by_id(db, user_id)
+    if not db_user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    db.delete(db_user)
+    db.commit()
+    return db_user

@@ -77,3 +77,12 @@ class PasswordResetRequest(BaseModel):
 class PasswordResetRequest(BaseModel):
     token: str
     new_password: str
+
+
+class UserUpdate(BaseModel):
+    """Schema para actualizar usuario (sin requerir contraseña)."""
+
+    username: Optional[str] = None
+    email: Optional[EmailStr] = None
+    nombre_completo: Optional[str] = None
+    rol: Optional[str] = None
