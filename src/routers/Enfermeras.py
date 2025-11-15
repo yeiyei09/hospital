@@ -43,10 +43,12 @@ def create_enfermera(
     dependencies=[Depends(require_roles("admin", "medico", "enfermera"))],
 )
 def read_all_enfermeras(
+    skip: int = 0,
+    limit: int = 10,
     db: Session = Depends(get_db),
     current_user: UserResponse = Depends(get_current_active_user),
 ):
-    enfermeras_db = enfermera_controller.get_enfermeras(db)
+    enfermeras_db = enfermera_controller.get_enfermeras(db, skip=skip, limit=limit)
     if not enfermeras_db:
         raise HTTPException(status_code=404, detail="No hay enfermeras registradas")
     return enfermeras_db

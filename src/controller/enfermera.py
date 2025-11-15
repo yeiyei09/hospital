@@ -39,9 +39,9 @@ def get_enfermera(db: Session, enfermera_id: UUID):
     return db.query(Enfermera).filter(Enfermera.idEnfermera == enfermera_id).first()
 
 
-def get_enfermeras(db: Session):
-    """Obtiene todas las enfermeras registradas."""
-    return db.query(Enfermera).all()
+def get_enfermeras(db: Session, skip: int = 0, limit: int = 10):
+    """Obtiene todas las enfermeras registradas (paginadas)."""
+    return db.query(Enfermera).offset(skip).limit(limit).all()
 
 
 def get_enfermeras_por_area(db: Session, area: str):
