@@ -11,9 +11,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from database.connection import Base, create_tables, engine
 from src.entities import (
     cita,
-    diagnostico,
     enfermera,
-    factura,
     medico,
     paciente,
     usuario,
@@ -105,8 +103,6 @@ def verify_migration_success() -> bool:
         "medicos",
         "enfermeras",
         "citas",
-        "diagnosticos",
-        "facturas",
     ]
 
     existing_tables = get_existing_tables()
@@ -166,15 +162,7 @@ def print_migration_status():
     """
     try:
         existing_tables = get_existing_tables()
-        required_tables = [
-            "usuarios",
-            "pacientes",
-            "medicos",
-            "enfermeras",
-            "citas",
-            "diagnosticos",
-            "facturas",
-        ]
+        required_tables = ["usuarios", "pacientes", "medicos", "enfermeras", "citas"]
 
         print("\n📊 Estado de la Base de Datos:")
         print("=" * 50)

@@ -33,6 +33,3 @@ class Enfermera(AuditMixin, Base):
     )
     fecha_creacion = Column(DateTime, index=True)
     fecha_actualizacion = Column(DateTime, index=True)
-
-    # Relaciones
-    diagnosticos = relationship("Diagnostico", back_populates="enfermera")

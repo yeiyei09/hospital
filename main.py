@@ -15,9 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.migrations import print_migration_status, run_migrations
 from src.routers import (
     Citas,
-    Diagnosticos,
     Enfermeras,
-    Facturas,
     Medicos,
     auth,
     pacientes,
@@ -66,8 +64,6 @@ app.include_router(pacientes.router)
 app.include_router(Medicos.router)
 app.include_router(Enfermeras.router)
 app.include_router(Citas.router)
-app.include_router(Diagnosticos.router)
-app.include_router(Facturas.router)
 
 origins = [
     "http://localhost",

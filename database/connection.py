@@ -44,8 +44,6 @@ def drop_tables():
 from src.entities import (
     paciente,
     medico,
-    factura,
-    diagnostico,
     cita,
     enfermera,
     usuario,

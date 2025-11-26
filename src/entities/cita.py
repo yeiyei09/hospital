@@ -39,5 +39,3 @@ class Cita(AuditMixin, Base):
     # Relaciones
     paciente = relationship("Paciente", back_populates="citas")
     medico = relationship("Medico", back_populates="citas")
-    diagnosticos = relationship("Diagnostico", back_populates="cita")
-    facturas = relationship("Factura", back_populates="cita")

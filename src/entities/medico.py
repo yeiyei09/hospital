@@ -37,4 +37,3 @@ class Medico(AuditMixin, Base):
 
     # Relaciones
     citas = relationship("Cita", back_populates="medico")
-    diagnosticos = relationship("Diagnostico", back_populates="medico")
