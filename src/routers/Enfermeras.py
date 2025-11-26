@@ -108,7 +108,7 @@ def delete_enfermera(
 
 
 @router.put(
-    "/{enfermera_cedula}",
+    "/{enfermera_id}",
     response_model=EnfermeraResponse,
     tags=["Enfermeras"],
     dependencies=[Depends(require_roles("admin"))],
