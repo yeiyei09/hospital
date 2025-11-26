@@ -4,10 +4,7 @@ from main import app
 from src.auth.middleware import get_current_active_user
 
 
-# 1. FIXTURE DE AUTORIZACIÓN
-
-
-# 2. LOS TESTS
+# LOS TESTS
 
 
 def test_crear_paciente_api(auth_client):
@@ -27,7 +24,7 @@ def test_crear_paciente_api(auth_client):
     response = auth_client.post("/pacientes/", json=datos_paciente)
 
     # Assert
-    # Verificamos que se creó (200 OK según tu router, aunque lo ideal sería 201)
+    # Verificamos que se creó 200 OK
     assert response.status_code in [status.HTTP_200_OK, status.HTTP_201_CREATED]
 
     data = response.json()
@@ -184,6 +181,8 @@ def test_actualizar_paciente_exitoso(auth_client, db_session, usuario_default):
     paciente = Paciente(
         nombrePaciente="Juan Original",
         correoPaciente="juan@original.com",
+        telefonoPaciente="123456",
+        cedulaPaciente="00000000",
         id_usuario_creacion=usuario_default.id_usuario,
     )
     db_session.add(paciente)
@@ -194,7 +193,8 @@ def test_actualizar_paciente_exitoso(auth_client, db_session, usuario_default):
     datos_actualizados = {
         "nombrePaciente": "Juan Editado",
         "correoPaciente": "juan@editado.com",
-        "telefonoPaciente": "999-999",
+        "telefonoPaciente": "999999",
+        "cedulaPaciente": "11111111",
         # Asegúrate de enviar los campos obligatorios que pida tu esquema PacienteCreate
     }
 
