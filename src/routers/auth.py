@@ -187,42 +187,6 @@ def list_users(db: Session = Depends(get_db)):
     return db.query(Usuario).all()
 
 
-@router.post("/verify-reset-email", tags=["Autenticación"])
-def verify_reset_email_route(
-    request: PasswordResetVerifyRequest, db: Session = Depends(get_db)
-):
-    """
-    Verifica si el correo pertenece a un usuario con rol 'paciente'.
-    """
-    try:
-        user = verify_reset_email(db, request.email)
-        return {
-            "message": "Correo válido. Puede proceder con el restablecimiento de contraseña.",
-            "email": user.email,
-            "rol": user.rol,
-        }
-    except ValueError as e:
-        detail = str(e)
-        if "paciente" in detail.lower():
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=detail)
-
-
-@router.post("/reset-password", tags=["Autenticación"])
-def reset_password_route(request: PasswordResetRequest, db: Session = Depends(get_db)):
-    """
-    Restablece la contraseña del usuario verificado (rol paciente).
-    """
-    try:
-        reset_user_password(db, request.email, request.new_password)
-        return {"message": "Contraseña actualizada exitosamente."}
-    except ValueError as e:
-        detail = str(e)
-        if "paciente" in detail.lower():
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=detail)
-
-
 @router.post("/request-password-reset", tags=["Autenticación"])
 async def request_password_reset(
     request: PasswordResetVerifyRequest,
